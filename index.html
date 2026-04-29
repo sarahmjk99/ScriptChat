@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ScriptDeck</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tahoma&display=swap');
+
+/* ── GLOBAL RESET ── */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --xp-blue:       #0a246a;
+  --xp-blue-mid:   #3d6bc1;
+  --xp-blue-light: #6b9de0;
+  --xp-titlebar:   linear-gradient(180deg, #4d90e0 0%, #1b5fca 8%, #1a50b8 40%, #1a50b8 90%, #0e2e7a 100%);
+  --xp-btn:        linear-gradient(180deg, #f0f0ea 0%, #d8d0c8 100%);
+  --xp-btn-hover:  linear-gradient(180deg, #fff8f0 0%, #e8d8c0 100%);
+  --xp-btn-press:  linear-gradient(180deg, #c8c0b8 0%, #e0d8d0 100%);
+  --xp-toolbar:    linear-gradient(180deg, #e8e0d8 0%, #d0c8c0 100%);
+  --xp-border-out: #888078;
+  --xp-border-in:  #fff8f0;
+  --xp-bg:         #ffffff;
+  --xp-msg-bg:     #ffffff;
+  --xp-input-bg:   #ffffff;
+  --xp-shadow:     2px 2px 0 #00000060;
+
+  /* AIM username colors */
+  --aim-me:        #cc0000;
+  --aim-other1:    #0000cc;
+  --aim-other2:    #006600;
+  --aim-other3:    #8800aa;
+  --aim-system:    #808080;
+  --aim-beat:      #0000aa;
+
+  font-family: 'Tahoma', 'MS Sans Serif', Arial, sans-serif;
+  font-size: 13px;
+}
+
+body {
+  background: #3a6ea5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0;
+}
+
+/* ── SCREENS ── */
+.screen { display: none; width: 100%; max-width: 480px; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ── XP WINDOW CHROME ── */
+.xp-window {
+  background: #ece9d8;
+  border: 2px solid var(--xp-border-out);
+  border-top-color: #fff;
+  border-left-color: #fff;
+  box-shadow: var(--xp-shadow);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.xp-titlebar {
+  background: var(--xp-titlebar);
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.xp-titlebar-icon {
+  width: 16px; height: 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23ffcc00'/%3E%3Ctext x='2' y='13' font-size='12' fill='%23000'>✎%3C/text%3E%3C/svg%3E") center/contain no-repeat;
+  flex-shrink: 0;
+}
+
+.xp-titlebar-text {
+  flex: 1;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  text-shadow: 1px 1px 2px #00000080;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xp-titlebar-btns { display: flex; gap: 2px; flex-shrink: 0; }
+
+.xp-tbtn {
+  width: 21px; height: 21px;
+  background: var(--xp-btn);
+  border: 1px solid #888;
+  border-top-color: #ddd;
+  border-left-color: #ddd;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Marlett', 'Tahoma', sans-serif;
+}
+.xp-tbtn:active { background: var(--xp-btn-press); }
+.xp-tbtn.close { color: #cc0000; }
+
+/* ── MENUBAR ── */
+.xp-menubar {
+  background: var(--xp-toolbar);
+  border-bottom: 1px solid #b8b0a8;
+  padding: 2px 4px;
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.xp-menu-item {
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.xp-menu-item:hover { background: #316ac5; color: white; border-color: #1a3a8a; }
+
+/* ── BEAT BANNER ── */
+.beat-banner {
+  background: #ddeeff;
+  border-bottom: 2px solid #99bbdd;
+  border-top: 1px solid #bbddff;
+  padding: 5px 8px;
+  flex-shrink: 0;
+}
+
+.beat-title {
+  font-weight: bold;
+  font-size: 11px;
+  color: var(--aim-beat);
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.beat-rows {
+  display: flex;
+  gap: 8px;
+}
+
+.beat-row {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.beat-from { color: #006600; }
+.beat-to   { color: #884400; }
+
+.beat-label-tag {
+  font-weight: bold;
+  font-size: 10px;
+  display: inline;
+}
+
+.beat-sep { color: #aaa; font-size: 10px; align-self: stretch; display: flex; align-items: center; }
+
+/* ── CHAT AREA ── */
+.chat-area {
+  flex: none;
+  height: 320px;
+  overflow: hidden;
+  background: var(--xp-msg-bg);
+  border: 2px inset #a0a0a0;
+  border-color: #808080 #fff #fff #808080;
+  margin: 4px 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  position: relative;
+}
+
+/* Beat divider in chat */
+.beat-divider-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  margin: 2px 0;
+  font-family: 'Orbitron', 'Tahoma', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #0000aa;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.beat-divider-line::before,
+.beat-divider-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #99bbdd;
+}
+
+/* People dropdown */
+.people-menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.people-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #ece9d8;
+  border: 2px solid #888;
+  border-top-color: #ddd;
+  border-left-color: #ddd;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  z-index: 500;
+  min-width: 160px;
+}
+
+.people-dropdown.open { display: block; }
+
+.people-dropdown-header {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #666;
+  padding: 4px 10px 2px;
+  border-bottom: 1px solid #c8c0b8;
+  font-family: 'Tahoma', sans-serif;
+}
+
+.people-dropdown-item {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.people-dropdown-item:hover {
+  background: #316ac5;
+  color: white;
+}
+
+/* AIM message style — inline, not bubbles */
+.msg-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0; }
+
+.msg-username {
+  font-weight: bold;
+  font-size: 13px;
+  margin-right: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.msg-colon { font-weight: bold; margin-right: 4px; flex-shrink: 0; }
+
+.msg-text { color: #000; word-break: break-word; }
+
+.msg-system {
+  color: var(--aim-system);
+  font-style: italic;
+  font-size: 12px;
+  text-align: center;
+  padding: 1px 0;
+}
+
+/* My character = red */
+.msg-me .msg-username { color: var(--aim-me); }
+.msg-me .msg-colon    { color: var(--aim-me); }
+
+/* Other characters — cycle colors */
+.char-color-0 .msg-username, .char-color-0 .msg-colon { color: var(--aim-other1); }
+.char-color-1 .msg-username, .char-color-1 .msg-colon { color: var(--aim-other2); }
+.char-color-2 .msg-username, .char-color-2 .msg-colon { color: var(--aim-other3); }
+.char-color-3 .msg-username, .char-color-3 .msg-colon { color: #aa4400; }
+
+/* Hidden line */
+.msg-hidden .msg-text {
+  background: #000;
+  color: #000;
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 0 4px;
+  user-select: none;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.msg-hidden .msg-text::after {
+  content: ' [click to reveal]';
+  color: #666;
+  background: transparent;
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* Hint partial reveal */
+.msg-hint .msg-text {
+  color: #0000cc;
+  background: #eeeeff;
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+/* ── TOOLBAR ── */
+.aim-toolbar {
+  background: var(--xp-toolbar);
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #b0a898;
+  padding: 3px 6px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.aim-tbtn {
+  background: var(--xp-btn);
+  border: 1px solid #888;
+  border-top-color: #ddd;
+  border-left-color: #ddd;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: 'Tahoma', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.aim-tbtn:hover   { background: var(--xp-btn-hover); }
+.aim-tbtn:active  { background: var(--xp-btn-press); border-color: #666; border-top-color: #888; border-left-color: #888; }
+.aim-tbtn.active-mode { background: #c8d8f8; border-color: #3355aa; font-weight: bold; }
+
+.toolbar-sep { width: 1px; background: #888; margin: 0 2px; align-self: stretch; }
+
+.aim-tbtn-icon { font-size: 14px; padding: 2px 6px; }
+
+/* ── INPUT AREA ── */
+.input-section {
+  padding: 4px 6px 6px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-label {
+  font-size: 11px;
+  color: #333;
+  font-weight: bold;
+}
+
+.input-row {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+}
+
+.aim-input {
+  flex: 1;
+  border: 2px inset #a0a0a0;
+  border-color: #808080 #fff #fff #808080;
+  background: var(--xp-input-bg);
+  padding: 4px 6px;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 13px;
+  outline: none;
+  min-height: 36px;
+  resize: none;
+}
+
+.aim-input:focus { border-color: #3366cc #aaa #aaa #3366cc; }
+
+.send-btn {
+  background: var(--xp-btn);
+  border: 2px solid #888;
+  border-top-color: #ddd;
+  border-left-color: #ddd;
+  padding: 4px 14px;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+.send-btn:hover  { background: var(--xp-btn-hover); }
+.send-btn:active { background: var(--xp-btn-press); border-color: #666 #ddd #ddd #666; }
+
+/* ── STATUS BAR ── */
+.xp-statusbar {
+  background: var(--xp-toolbar);
+  border-top: 1px solid #fff;
+  padding: 2px 6px;
+  font-size: 11px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* ── BUDDY LIST (file select screen) ── */
+.buddy-list {
+  background: #ece9d8;
+  border: 2px solid var(--xp-border-out);
+  border-top-color: #fff;
+  border-left-color: #fff;
+  box-shadow: var(--xp-shadow);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.buddy-groups { flex: 1; overflow-y: auto; }
+
+.buddy-group-header {
+  background: linear-gradient(180deg, #c0d8f0 0%, #a8c4e8 100%);
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #7090b8;
+  padding: 3px 8px;
+  font-weight: bold;
+  font-size: 12px;
+  color: #00008b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.buddy-item {
+  padding: 4px 20px;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #e8e0d8;
+}
+.buddy-item:hover { background: #316ac5; color: white; }
+.buddy-item.selected { background: #99bbdd; font-weight: bold; }
+
+.buddy-icon { font-size: 16px; }
+
+.buddy-name { flex: 1; }
+.buddy-sub  { font-size: 11px; color: #888; }
+.buddy-item:hover .buddy-sub { color: #cce; }
+
+/* ── CHARACTER SELECT ── */
+.char-list {
+  flex: 1;
+  overflow-y: auto;
+  background: white;
+  border: 2px inset #a0a0a0;
+  border-color: #808080 #fff #fff #808080;
+  margin: 6px;
+}
+
+.char-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #e8e0d8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.char-item:hover { background: #316ac5; color: white; }
+.char-item:hover .char-count { color: #99ccff; }
+.char-item.selected { background: #99bbdd; }
+
+.char-initial {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #3366cc, #6699ff);
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #1a3a8a;
+  flex-shrink: 0;
+}
+
+.char-name-big { font-weight: bold; font-size: 13px; flex: 1; }
+.char-count    { font-size: 11px; color: #666; }
+
+/* ── IMPORT SCREEN ── */
+.import-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  background: #ece9d8;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xp-groupbox {
+  border: 2px groove #c0b8b0;
+  padding: 8px;
+  position: relative;
+  background: #f8f4ee;
+}
+
+.xp-groupbox-label {
+  position: absolute;
+  top: -8px;
+  left: 10px;
+  background: #f8f4ee;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000;
+}
+
+.xp-label { font-size: 12px; margin-bottom: 3px; display: block; }
+
+.xp-textinput {
+  width: 100%;
+  border: 2px inset #a0a0a0;
+  border-color: #808080 #fff #fff #808080;
+  background: white;
+  padding: 3px 5px;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 12px;
+  outline: none;
+}
+.xp-textinput:focus { border-color: #3366cc #aaa #aaa #3366cc; }
+
+.xp-textarea {
+  width: 100%;
+  border: 2px inset #a0a0a0;
+  border-color: #808080 #fff #fff #808080;
+  background: white;
+  padding: 4px 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  outline: none;
+  resize: vertical;
+  min-height: 160px;
+}
+.xp-textarea:focus { border-color: #3366cc #aaa #aaa #3366cc; }
+
+.xp-btn-row { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+
+.xp-btn {
+  background: var(--xp-btn);
+  border: 2px solid #888;
+  border-top-color: #ddd;
+  border-left-color: #ddd;
+  padding: 4px 16px;
+  font-family: 'Tahoma', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  min-width: 75px;
+  text-align: center;
+}
+.xp-btn:hover  { background: var(--xp-btn-hover); }
+.xp-btn:active { background: var(--xp-btn-press); border-color: #666 #ddd #ddd #666; }
+.xp-btn.default { border: 2px solid #000; }
+
+.hint-text { font-size: 11px; color: #666; font-style: italic; margin-top: 3px; }
+
+/* ── MODE INDICATOR ── */
+.mode-pill {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 10px;
+  font-weight: bold;
+  border: 1px solid;
+  border-radius: 0;
+}
+.mode-pill.run   { background: #ffe8e8; border-color: #cc4444; color: #cc0000; }
+.mode-pill.read  { background: #e8f8e8; border-color: #44aa44; color: #006600; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 16px; }
+::-webkit-scrollbar-track { background: #c8c0b8; border: 1px solid #a8a0a8; }
+::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #e8e0d8, #c8c0b8); border: 1px solid #888; }
+::-webkit-scrollbar-button { background: #d8d0c8; border: 1px solid #888; height: 16px; }
+
+/* ── NOTIFICATION / TOAST ── */
+.xp-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #ffffe1;
+  border: 1px solid #888;
+  box-shadow: 2px 2px 4px #00000060;
+  padding: 6px 14px;
+  font-size: 12px;
+  z-index: 9999;
+  transition: transform 0.2s ease;
+  white-space: nowrap;
+}
+.xp-toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── BEAT EDITOR ── */
+.beat-editor-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  align-items: flex-start;
+}
+.beat-editor-num {
+  font-weight: bold;
+  font-size: 11px;
+  color: var(--aim-beat);
+  min-width: 20px;
+  padding-top: 4px;
+}
+.beat-editor-fields { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.beat-anchor-label { font-size: 10px; color: #666; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 360px) {
+  :root { font-size: 12px; }
+  .beat-rows { flex-direction: column; gap: 2px; }
+  .beat-sep  { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ SCREEN 1: FILE SELECT ══════════════════ -->
+<div id="screen-files" class="screen active">
+  <div class="buddy-list">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-icon">🎭</div>
+      <div class="xp-titlebar-text">ScriptDeck — Buddy List</div>
+      <div class="xp-titlebar-btns">
+        <div class="xp-tbtn close">✕</div>
+      </div>
+    </div>
+    <div class="xp-menubar">
+      <div class="xp-menu-item" onclick="goTo('screen-import')">File</div>
+      <div class="xp-menu-item" onclick="editSelected()">Edit</div>
+    </div>
+
+    <div class="buddy-groups" id="scriptList">
+      <div class="buddy-group-header">▼ My Scripts (0)</div>
+      <div style="padding:20px;text-align:center;color:#666;font-size:12px;">
+        No scripts loaded yet.<br><br>
+        Go to <b>File</b> to paste a script.
+      </div>
+    </div>
+
+    <div style="border-top:1px solid #b0a898;padding:5px 8px;background:var(--xp-toolbar);display:flex;gap:4px;flex-wrap:wrap;">
+      <button class="xp-btn" onclick="newScript()" style="flex:1">📄 New</button>
+      <button class="xp-btn" style="flex:1" id="openScriptBtn" onclick="openSelected()" disabled>💬 Open</button>
+<button class="xp-btn" style="flex:1;color:#cc0000;" id="deleteScriptBtn" onclick="deleteSelected()" disabled>🗑 Delete</button>
+    </div>
+    <div class="xp-statusbar">
+      <span id="fileStatus">No scripts loaded</span>
+      <span>ScriptDeck v1.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SCREEN 2: IMPORT ══════════════════ -->
+<div id="screen-import" class="screen">
+  <div class="xp-window">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-icon">📄</div>
+      <div class="xp-titlebar-text" id="importScreenTitle">New Script — ScriptDeck</div>
+      <div class="xp-titlebar-btns">
+        <div class="xp-tbtn close" onclick="goTo('screen-files')">✕</div>
+      </div>
+    </div>
+    <div class="import-body">
+
+      <div class="xp-groupbox">
+        <span class="xp-groupbox-label">Script Info</span>
+        <label class="xp-label">Script / Scene Title:</label>
+        <input class="xp-textinput" id="importTitle" placeholder="e.g. The Coffee Shop Scene" />
+        <br><br>
+        <input class="xp-textinput" id="importMyChar" style="display:none" />
+      </div>
+
+      <div class="xp-groupbox">
+        <span class="xp-groupbox-label">Upload Script</span>
+
+        <!-- Upload zone -->
+        <div id="uploadZone" onclick="document.getElementById('pdfFileInput').click()"
+          style="border:2px dashed #7090b8;background:#eef4ff;padding:18px;text-align:center;cursor:pointer;margin-bottom:6px;">
+          <div style="font-size:24px;margin-bottom:4px;">📄</div>
+          <div style="font-weight:bold;font-size:12px;color:#0000aa;">Click to upload PDF or text file</div>
+          <div style="font-size:11px;color:#666;margin-top:3px;">.pdf, .txt, .fdx accepted</div>
+        </div>
+        <input type="file" id="pdfFileInput" accept=".pdf,.txt,.fdx,.fountain" style="display:none" onchange="handleFileUpload(event)" />
+
+        <!-- Progress bar (hidden until upload) -->
+        <div id="uploadProgress" style="display:none;margin-bottom:6px;">
+          <div style="font-size:11px;color:#333;margin-bottom:3px;" id="uploadProgressLabel">Reading PDF...</div>
+          <div style="background:#c8c0b8;border:1px inset #888;height:16px;position:relative;">
+            <div id="uploadProgressBar" style="background:linear-gradient(90deg,#316ac5,#6699ff);height:100%;width:0%;transition:width 0.2s;"></div>
+          </div>
+        </div>
+
+        <!-- Preview / status -->
+        <div id="uploadStatus" style="display:none;">
+          <div style="background:#e8f8e8;border:1px solid #44aa44;padding:6px 8px;font-size:12px;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:16px;">✅</span>
+            <div>
+              <div id="uploadFileName" style="font-weight:bold;"></div>
+              <div id="uploadStats" style="font-size:11px;color:#555;"></div>
+            </div>
+            <button class="xp-btn" onclick="clearUpload()" style="margin-left:auto;font-size:11px;padding:2px 8px;">✕ Clear</button>
+          </div>
+
+          <!-- Manual character entry -->
+          <div style="margin-top:8px;background:#fffbe8;border:1px solid #ccaa44;padding:8px;">
+            <div style="font-size:11px;font-weight:bold;color:#333;margin-bottom:5px;">
+              📋 Type in all the character names from the script:
+            </div>
+            <div style="font-size:11px;color:#666;margin-bottom:6px;">
+              Separate names with commas — e.g. <b>ALEX, MORGAN, DETECTIVE KANE</b>
+            </div>
+            <input class="xp-textinput" id="manualCharInput"
+              placeholder="e.g. ALEX, MORGAN, DETECTIVE KANE"
+              oninput="buildCharChipsFromInput(this.value)"
+              style="width:100%;margin-bottom:6px;" />
+
+            <!-- Chips appear here as they type -->
+            <div id="charChipsRow" style="display:flex;flex-wrap:wrap;gap:4px;min-height:24px;"></div>
+
+            <div style="font-size:11px;color:#555;margin-top:6px;">
+              Then click <b>your</b> character below to select it:
+            </div>
+            <div id="detectedChars" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          </div>
+        </div>
+
+        <!-- Fallback paste (collapsed by default) -->
+        <div style="margin-top:6px;">
+          <span style="font-size:11px;color:#666;cursor:pointer;text-decoration:underline;" onclick="togglePasteFallback()">▶ Or paste text manually instead</span>
+          <div id="pasteFallback" style="display:none;margin-top:6px;">
+            <textarea class="xp-textarea" id="importScriptPaste" placeholder="CHARACTER NAME&#10;Their dialogue here.&#10;&#10;OTHER CHARACTER&#10;Their line here." style="min-height:120px;" oninput="document.getElementById('importScript').value=this.value"></textarea>
+            <p class="hint-text">Character names in ALL CAPS on their own line. Dialogue follows below.</p>
+          </div>
+        </div>
+
+        <!-- Hidden storage for extracted text -->
+        <textarea id="importScriptHidden" style="display:none;"></textarea>
+      </div>
+
+      <div class="xp-groupbox">
+        <span class="xp-groupbox-label">Beat Breakdown (optional but recommended)</span>
+        <p class="hint-text" style="margin-bottom:6px">Write your scene beats below. Each beat has a "where you're coming from" and "where you're going" note.</p>
+        <div id="beatEditorContainer">
+          <div class="beat-editor-row" id="beat-row-0">
+            <div class="beat-editor-num">1</div>
+            <div class="beat-editor-fields">
+              <span class="beat-anchor-label">Beat starts when:</span>
+              <input class="xp-textinput" placeholder='e.g. MORGAN > "You\'re late"' id="beat-anchor-0" />
+              <input class="xp-textinput" placeholder="↑ Where you're coming from..." id="beat-from-0" style="border-left:3px solid #006600;" />
+              <input class="xp-textinput" placeholder="↓ Where you're going..." id="beat-to-0" style="border-left:3px solid #884400;" />
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:6px">
+          <button class="xp-btn" onclick="addBeatRow()">+ Add Beat</button>
+        </div>
+      </div>
+
+      <div class="xp-btn-row">
+        <button class="xp-btn" onclick="loadDemo()">Load Demo</button>
+        <button class="xp-btn" onclick="goTo('screen-files')">Cancel</button>
+        <button class="xp-btn" onclick="saveOnly()" id="saveOnlyBtn">💾 Save</button>
+        <button class="xp-btn default" onclick="importScript()">Save & Open</button>
+      </div>
+    </div>
+    <div class="xp-statusbar">
+      <span id="importStatusBar">Upload a script file to begin</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SCREEN 3: CHARACTER SELECT ══════════════════ -->
+<div id="screen-chars" class="screen">
+  <div class="xp-window">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-icon">🎭</div>
+      <div class="xp-titlebar-text" id="charScreenTitle">Choose Your Character</div>
+      <div class="xp-titlebar-btns">
+        <div class="xp-tbtn close" onclick="goTo('screen-files')">✕</div>
+      </div>
+    </div>
+    <div class="xp-menubar">
+      <div class="xp-menu-item" onclick="goTo('screen-files')">← Back</div>
+    </div>
+    <div style="padding:8px 6px 4px;font-size:12px;color:#333;">
+      Who are you playing? Select your character:
+    </div>
+    <div class="char-list" id="charList"></div>
+    <div style="border-top:1px solid #b0a898;padding:5px 8px;background:var(--xp-toolbar);display:flex;gap:4px;">
+      <button class="xp-btn" onclick="goTo('screen-files')" style="flex:1">Back</button>
+      <button class="xp-btn default" onclick="startStudy()" style="flex:1">Next →</button>
+    </div>
+    <div class="xp-statusbar">
+      <span id="charStatus">Select a character to begin</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SCREEN 3b: BEAT SELECT ══════════════════ -->
+<div id="screen-beatselect" class="screen">
+  <div class="xp-window">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-icon">🎬</div>
+      <div class="xp-titlebar-text">Where do you want to start?</div>
+      <div class="xp-titlebar-btns">
+        <div class="xp-tbtn close" onclick="goTo('screen-chars')">✕</div>
+      </div>
+    </div>
+    <div class="xp-menubar">
+      <div class="xp-menu-item" onclick="goTo('screen-chars')">← Back</div>
+    </div>
+    <div style="padding:8px 6px 4px;font-size:12px;color:#333;">
+      Start from the beginning or jump to a specific beat:
+    </div>
+    <div class="char-list" id="beatSelectList"></div>
+    <div style="border-top:1px solid #b0a898;padding:5px 8px;background:var(--xp-toolbar);display:flex;gap:4px;">
+      <button class="xp-btn" onclick="goTo('screen-chars')" style="flex:1">← Back</button>
+      <button class="xp-btn default" onclick="launchStudy()" style="flex:1">Let's go ▶</button>
+    </div>
+    <div class="xp-statusbar">
+      <span id="beatSelectStatus">Select where to start</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ SCREEN 4: STUDY ══════════════════ -->
+<div id="screen-study" class="screen">
+  <div class="xp-window">
+
+    <!-- Title bar -->
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-icon">💬</div>
+      <div class="xp-titlebar-text" id="studyTitle">Instant Message</div>
+      <div class="xp-titlebar-btns">
+        <div class="xp-tbtn close" onclick="goTo('screen-files')">✕</div>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="xp-menubar">
+      <div class="xp-menu-item" onclick="goTo('screen-files')">Exit</div>
+      <div class="people-menu-wrap">
+        <div class="xp-menu-item" onclick="toggleBeatMenu(event)">Beat</div>
+        <div class="people-dropdown" id="beatDropdown">
+          <div class="people-dropdown-header">JUMP TO BEAT</div>
+          <div id="beatDropdownItems"></div>
+        </div>
+      </div>
+      <div class="people-menu-wrap">
+        <div class="xp-menu-item" onclick="togglePeopleMenu(event)">People</div>
+        <div class="people-dropdown" id="peopleDropdown">
+          <div class="people-dropdown-header">SWITCH CHARACTER</div>
+          <div id="peopleDropdownItems"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Beat banner -->
+    <div class="beat-banner" id="beatBanner">
+      <div class="beat-title" id="beatTitle">BEAT 1</div>
+      <div class="beat-rows">
+        <div class="beat-row beat-from"><span class="beat-label-tag">↑ FROM: </span><span id="beatFrom">—</span></div>
+        <div class="beat-sep">|</div>
+        <div class="beat-row beat-to"><span class="beat-label-tag">↓ TO: </span><span id="beatTo">—</span></div>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-area" id="chatArea"></div>
+
+    <!-- Toolbar -->
+    <div class="aim-toolbar">
+      <button class="aim-tbtn aim-tbtn-icon" onclick="toggleMode()" id="modeBtn" title="Toggle mode">👁</button>
+      <div class="toolbar-sep"></div>
+      <button class="aim-tbtn" onclick="showHint()" id="hintBtn">Hint</button>
+      <button class="aim-tbtn" onclick="skipLine()" id="skipBtn">Skip</button>
+      <div class="toolbar-sep"></div>
+      <button class="aim-tbtn" onclick="prevLine()">◀ Prev</button>
+      <div class="toolbar-sep"></div>
+      <span id="progressLabel" style="font-size:11px;color:#555;padding:0 4px;white-space:nowrap;">0/0</span>
+      <div class="toolbar-sep"></div>
+      <button class="aim-tbtn" onclick="showDebugInfo()" style="font-size:10px;color:#888;">dbg</button>
+    </div>
+
+    <!-- Input -->
+    <div class="input-section">
+      <div class="input-row">
+        <textarea class="aim-input" id="lineInput" placeholder="type your line here..." rows="2"
+          onkeydown="handleInputKey(event)"></textarea>
+        <button class="send-btn" onclick="sendLine()">Send</button>
+      </div>
+    </div>
+
+    <div class="xp-statusbar">
+      <span id="studyStatus">Run Lines mode — your lines are hidden</span>
+      <span id="modeIndicator"><span class="mode-pill run">RUN LINES</span></span>
+    </div>
+
+  </div>
+</div>
+
+<div class="xp-toast" id="toast"></div>
+
+<!-- ══════════════════ JAVASCRIPT ══════════════════ -->
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let scripts = [];       // [{title, myChar, beats, script}]
+let currentScriptIdx = -1;
+let selectedChar = '';
+let selectedCharIdx = -1;
+let cursor = 0;
+let mode = 'run';       // 'run' | 'read'
+let hintLevel = 0;
+let lineRevealed = false;
+let beatRows = 1;
+
+// Color assignments for characters
+let charColorMap = {};
+let colorIdx = 0;
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 'screen-study') { scrollChatToBottom(); }
+}
+
+// ── Parse Script ─────────────────────────────────────────────────────────────
+function isStageDir(s) { return /^[\[(\*]/.test(s.trim()); }
+
+function isCharName(s) {
+  s = s.trim();
+  if (!s || s.length > 35 || isStageDir(s)) return false;
+  if (/[.!?]/.test(s.slice(0,-1))) return false;
+  const letters = s.replace(/[^a-zA-Z]/g,'');
+  if (!letters) return false;
+  const upper = letters.replace(/[a-z]/g,'');
+  return (upper.length / letters.length) >= 0.7;
+}
+
+function parseScript(raw, knownChars) {
+  const lines = raw.split('\n');
+  const beats = [];
+  let currentChar = null, buffer = [];
+
+  const charSet = knownChars && knownChars.length
+    ? new Set(knownChars.map(c => c.toUpperCase().trim()))
+    : null;
+
+  // Check if PDF extractor added [x:NNN] position tags
+  const hasTags = lines.some(l => /^\[x:\d+\]/.test(l));
+
+  function flush() {
+    if (currentChar && buffer.length) {
+      const text = buffer
+        .join(' ')
+        .replace(/\s*\(.*?\)/g, '')
+        .replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '') // strip null/zero-width chars
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (text) beats.push({char: currentChar, text, isStage: false});
+    }
+    if (buffer.length) currentChar = null;
+    buffer = [];
+  }
+
+  function cleanName(s) {
+    return s.replace(/\s*\(.*?\)/g,'').replace(/\s*\[x:\d+\]/g,'').toUpperCase().trim();
+  }
+
+  function isKnownChar(s) {
+    if (!charSet) return false;
+    return charSet.has(cleanName(s));
+  }
+
+  function isParenthetical(s) {
+    return /^\(.*\)$/.test(s.trim());
+  }
+
+  function parseLine(line) {
+    const match = line.match(/^\[x:(\d+)\](.*)/);
+    if (match) return { x: parseInt(match[1]), text: match[2].trim() };
+    return { x: null, text: line.trim() };
+  }
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    const { x, text: s } = parseLine(line);
+    if (!s) continue;
+    if (isParenthetical(s)) continue;
+
+    if (hasTags && x !== null) {
+      // Use exact x positions from PDF:
+      // x > 200  → character name zone (deeply indented ~252)
+      // x < 140  → stage direction zone (left margin ~108)
+      // 140-200  → dialogue zone (medium indent ~180)
+      if (x > 200) {
+        if (isKnownChar(s)) {
+          flush();
+          currentChar = cleanName(s);
+          buffer = [];
+        }
+        // Unknown at char position = scene heading/extra, ignore
+      } else if (x < 140) {
+        // Stage direction
+        flush();
+        if (s.length > 3) beats.push({char: '—', text: s, isStage: true});
+        currentChar = null;
+      } else {
+        // Dialogue
+        if (currentChar) buffer.push(s);
+      }
+
+    } else {
+      // Plain text fallback — casing heuristic
+      if (isKnownChar(s)) {
+        flush();
+        currentChar = cleanName(s);
+        buffer = [];
+      } else if (currentChar) {
+        const isStageProse = /^[A-Z][a-z]/.test(s) &&
+          s.replace(/[^a-z]/g,'').length > s.replace(/[^A-Z]/g,'').length &&
+          s.length > 15;
+        if (isStageProse) {
+          flush();
+          beats.push({char:'—', text:s, isStage:true});
+          currentChar = null;
+        } else {
+          buffer.push(s);
+        }
+      } else {
+        const isStageProse = /^[A-Z][a-z]/.test(s) &&
+          s.replace(/[^a-z]/g,'').length > s.replace(/[^A-Z]/g,'').length &&
+          s.length > 8;
+        if (isStageProse) beats.push({char:'—', text:s, isStage:true});
+      }
+    }
+  }
+
+  flush();
+  return beats.filter(b => b.text.trim());
+}
+
+function getCharacters(beats) {
+  const seen = new Set(), chars = [];
+  for (const b of beats) if (!b.isStage && !seen.has(b.char)) { chars.push(b.char); seen.add(b.char); }
+  return chars;
+}
+
+// ── Parse beats from editor ───────────────────────────────────────────────
+function collectBeatData() {
+  const result = [];
+  for (let i = 0; i < beatRows; i++) {
+    const anchor = document.getElementById(`beat-anchor-${i}`)?.value.trim() || '';
+    const from   = document.getElementById(`beat-from-${i}`)?.value.trim() || '';
+    const to     = document.getElementById(`beat-to-${i}`)?.value.trim() || '';
+    if (from || to) result.push({anchor, from, to});
+  }
+  return result;
+}
+
+function addBeatRow() {
+  const i = beatRows;
+  beatRows++;
+  const container = document.getElementById('beatEditorContainer');
+  const row = document.createElement('div');
+  row.className = 'beat-editor-row';
+  row.id = `beat-row-${i}`;
+  row.innerHTML = `
+    <div class="beat-editor-num">${i+1}</div>
+    <div class="beat-editor-fields">
+      <span class="beat-anchor-label">Beat starts when:</span>
+      <input class="xp-textinput" placeholder='e.g. ALEX > "Look. I know"' id="beat-anchor-${i}" />
+      <input class="xp-textinput" placeholder="↑ Where you're coming from..." id="beat-from-${i}" style="border-left:3px solid #006600;" />
+      <input class="xp-textinput" placeholder="↓ Where you're going..." id="beat-to-${i}" style="border-left:3px solid #884400;" />
+    </div>`;
+  container.appendChild(row);
+}
+
+// ── Import ────────────────────────────────────────────────────────────────────
+function importScript() {
+  // Get raw text — from PDF extraction or from paste textarea
+  const pasteTA = document.getElementById('importScriptPaste');
+  const raw = (extractedScriptText && !pasteMode)
+    ? extractedScriptText.trim()
+    : (pasteTA ? pasteTA.value.trim() : '');
+
+  const title  = document.getElementById('importTitle').value.trim() || 'Untitled Scene';
+  const myChar = document.getElementById('importMyChar').value.trim().toUpperCase();
+
+  if (!raw) { showToast('Please upload a script or paste text first!'); return; }
+  // myChar is optional here — user picks character on the next screen
+
+  // Use manually entered character names if available
+  const knownChars = detectedCharacterNames && detectedCharacterNames.length
+    ? detectedCharacterNames
+    : null;
+  const scriptBeats = parseScript(raw, knownChars);
+  if (!scriptBeats.length) { showToast("Couldn't parse script — check format"); return; }
+
+  const beatData = collectBeatData();
+
+  // Map beats to script positions
+  const mappedBeats = mapBeatsToScript(scriptBeats, beatData);
+  // Also store the original beat editor data (anchor, from, to) for restoration
+  const beatsWithAnchor = mappedBeats.map((b, i) => ({
+    ...b,
+    anchor: beatData[i]?.anchor || ''
+  }));
+
+  // Remap beat startIdx fresh from anchors against the just-parsed script
+  const freshBeats = mapBeatsToScript(scriptBeats, beatData).map((b, i) => ({
+    ...b,
+    anchor: beatData[i]?.anchor || '',
+    from: beatData[i]?.from || '',
+    to: beatData[i]?.to || ''
+  }));
+
+  const entry = {
+    title,
+    myChar: myChar || '',
+    beats: freshBeats,
+    script: scriptBeats,
+    _rawText: extractedScriptText || '',
+    _knownChars: knownChars || []
+  };
+
+  if (window._editingScriptIdx !== undefined && window._editingScriptIdx >= 0) {
+    // Update existing script
+    scripts[window._editingScriptIdx] = entry;
+    currentScriptIdx = window._editingScriptIdx;
+    window._editingScriptIdx = -1;
+    showToast('Script updated!');
+  } else {
+    // Add new script
+    scripts.push(entry);
+    currentScriptIdx = scripts.length - 1;
+  }
+  saveToStorage();
+  updateFileList();
+  if (window._saveOnlyMode) {
+    window._saveOnlyMode = false;
+    window._editingScriptIdx = -1;
+    showToast('💾 Saved!');
+    goTo('screen-files');
+  } else {
+    openScript(currentScriptIdx);
+  }
+}
+
+function mapBeatsToScript(scriptBeats, beatData) {
+  if (!beatData.length) return [];
+  const result = [];
+
+  beatData.forEach((bd, beatNum) => {
+    let startIdx = beatNum === 0 ? 0 : -1;
+
+    if (bd.anchor && bd.anchor.trim() && beatNum > 0) {
+      // Only use anchor to find startIdx for beats after the first
+      // Beat 0 always starts at index 0
+      const parts = bd.anchor.split('>');
+      const char = parts[0] ? parts[0].trim().toUpperCase() : '';
+      const rawSnippet = parts[1] ? parts[1].trim() : '';
+      const snippet = rawSnippet
+        .replace(/[\u0022\u0027\u201C\u201D\u2018\u2019]/g, '')
+        .replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '')
+        .toLowerCase().trim();
+
+      const prevStart = result.length > 0 ? result[result.length-1].startIdx : 0;
+
+      for (let i = 0; i < scriptBeats.length; i++) {
+        const b = scriptBeats[i];
+        if (b.isStage) continue;
+        const bChar = b.char.toUpperCase();
+        // Normalize: strip null bytes, zero-width spaces, normalize whitespace
+        const bText = b.text
+          .replace(/[\u0000\u200B\uFEFF]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .toLowerCase()
+          .trim();
+        const snippetNorm = snippet
+          .replace(/[\u0000\u200B\uFEFF]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .toLowerCase()
+          .trim();
+
+        if (bChar === char) {
+          if (!snippetNorm) {
+            // No snippet — use first occurrence after previous beat
+            if (i >= prevStart) { startIdx = i; break; }
+          } else {
+            // Full match
+            if (bText.includes(snippetNorm)) { startIdx = i; break; }
+            // First 3 words match (more reliable than single word)
+            const words = snippetNorm.split(' ').filter(w => w.length > 0);
+            const threeWords = words.slice(0, 3).join(' ');
+            if (threeWords.length >= 6 && bText.includes(threeWords)) { startIdx = i; break; }
+            // For Korean/short snippets: first meaningful word (length >= 3)
+            const firstMeaningful = words.find(w => w.length >= 3);
+            if (firstMeaningful && firstMeaningful.length >= 3 && bText.includes(firstMeaningful) && i > prevStart) { startIdx = i; break; }
+          }
+        }
+      }
+    }
+
+    if (startIdx === -1) {
+      startIdx = result.length > 0 ? result[result.length-1].startIdx + 1 : 0;
+    }
+
+    result.push({startIdx, from: bd.from, to: bd.to, anchor: bd.anchor || ''});
+  });
+
+  return result;
+}
+
+function getCurrentBeat(scriptBeats, mappedBeats, cursor) {
+  if (!mappedBeats.length) return null;
+  let current = mappedBeats[0];
+  for (const b of mappedBeats) {
+    if (b.startIdx <= cursor) current = b;
+    else break;
+  }
+  return current;
+}
+
+// ── Demo ──────────────────────────────────────────────────────────────────────
+function loadDemo() {
+  document.getElementById('importTitle').value = 'The Coffee Shop Scene';
+  document.getElementById('importMyChar').value = 'ALEX';
+  document.getElementById('importScript').value =
+`[Scene: A coffee shop. ALEX enters to find MORGAN waiting.]
+
+MORGAN
+You're late. As always.
+
+ALEX
+Traffic was insane. Have you ordered?
+
+MORGAN
+Just water. I wasn't sure if we were actually doing this.
+
+ALEX
+Of course we're doing this. Why wouldn't we be?
+
+MORGAN
+I don't know, Alex. You tell me.
+
+[Pause. ALEX sits down.]
+
+ALEX
+Look. I know I said some things I shouldn't have.
+
+MORGAN
+You think?
+
+ALEX
+Let me finish. I was scared. And instead of just saying that, I made it your problem. That wasn't fair.
+
+MORGAN
+(quietly)
+No. It wasn't.
+
+ALEX
+So. Can we start over?
+
+[MORGAN considers this for a long moment.]
+
+MORGAN
+I'll think about it.
+
+ALEX
+I can work with that.`;
+
+  // Prefill beat editor
+  document.getElementById('beat-anchor-0').value = 'MORGAN > "You\'re late"';
+  document.getElementById('beat-from-0').value = "You've been avoiding this conversation for weeks. You arrive already defending yourself.";
+  document.getElementById('beat-to-0').value = "Morgan's silence is landing. The armor is starting to crack.";
+
+  // Add second beat
+  addBeatRow();
+  setTimeout(() => {
+    document.getElementById('beat-anchor-1').value = 'ALEX > "Look. I know"';
+    document.getElementById('beat-from-1').value = "Morgan's silence landed. You felt it. The defense dropped.";
+    document.getElementById('beat-to-1').value = "The ask. Everything here has been preparation for this moment.";
+  }, 50);
+
+  showToast('Demo loaded — click OK to open');
+}
+
+// ── File list ─────────────────────────────────────────────────────────────────
+function updateFileList() {
+  const container = document.getElementById('scriptList');
+  if (!scripts.length) {
+    container.innerHTML = '<div class="buddy-group-header">▼ My Scripts (0)</div><div style="padding:20px;text-align:center;color:#666;font-size:12px;">No scripts loaded yet.<br><br>Go to <b>File</b> to add a script.</div>';
+    document.getElementById('fileStatus').textContent = 'No scripts loaded';
+    document.getElementById('openScriptBtn').disabled = true;
+    document.getElementById('deleteScriptBtn').disabled = true;
+    return;
+  }
+  container.innerHTML = `<div class="buddy-group-header">▼ My Scripts (${scripts.length})</div>` +
+    scripts.map((s,i) => `
+      <div class="buddy-item ${i===currentScriptIdx?'selected':''}" onclick="selectScript(${i})" style="justify-content:space-between;">
+        <span class="buddy-icon">🎭</span>
+        <span class="buddy-name" style="flex:1">${s.title}</span>
+        <span class="buddy-sub">${s.script.filter(b=>!b.isStage).length} lines</span>
+      </div>`).join('');
+  document.getElementById('fileStatus').textContent = `${scripts.length} script${scripts.length>1?'s':''} loaded`;
+  document.getElementById('openScriptBtn').disabled = currentScriptIdx < 0;
+  document.getElementById('deleteScriptBtn').disabled = currentScriptIdx < 0;
+}
+
+function selectScript(i) {
+  currentScriptIdx = i;
+  updateFileList();
+  document.getElementById('openScriptBtn').disabled = false;
+  document.getElementById('deleteScriptBtn').disabled = false;
+}
+
+function deleteSelected() {
+  if (currentScriptIdx < 0 || !scripts.length) return;
+  const name = scripts[currentScriptIdx].title;
+  // Show inline confirm in the status bar instead of confirm() which breaks on mobile
+  const statusEl = document.getElementById('fileStatus');
+  const btnEl = document.getElementById('deleteScriptBtn');
+  if (btnEl.dataset.confirming === 'true') {
+    // Second click — actually delete
+    scripts.splice(currentScriptIdx, 1);
+    currentScriptIdx = scripts.length > 0 ? 0 : -1;
+    saveToStorage();
+    updateFileList();
+    showToast(`"${name}" deleted`);
+    btnEl.dataset.confirming = 'false';
+    btnEl.textContent = '🗑 Delete';
+    btnEl.style.background = '';
+  } else {
+    // First click — ask for confirmation via button state
+    btnEl.dataset.confirming = 'true';
+    btnEl.textContent = '⚠ Confirm delete?';
+    btnEl.style.background = '#ffeeee';
+    statusEl.textContent = `Click Delete again to confirm removing "${name}"`;
+    // Auto-cancel after 4 seconds
+    setTimeout(() => {
+      if (btnEl.dataset.confirming === 'true') {
+        btnEl.dataset.confirming = 'false';
+        btnEl.textContent = '🗑 Delete';
+        btnEl.style.background = '';
+        statusEl.textContent = `${scripts.length} script${scripts.length>1?'s':''} loaded`;
+      }
+    }, 4000);
+  }
+}
+
+function openSelected() {
+  if (currentScriptIdx < 0) return;
+  openScript(currentScriptIdx);
+}
+
+// Save the current import form without opening the script
+function newScript() {
+  // Clear edit mode and reset import screen for a fresh entry
+  window._editingScriptIdx = -1;
+  window._saveOnlyMode = false;
+  document.getElementById('importTitle').value = '';
+  document.getElementById('importMyChar').value = '';
+  document.getElementById('importScreenTitle').textContent = 'New Script — ScriptDeck';
+  document.getElementById('importStatusBar').textContent = 'Upload a script file to begin';
+  extractedScriptText = '';
+  detectedCharacterNames = [];
+  pasteMode = false;
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('uploadStatus').style.display = 'none';
+  document.getElementById('pdfFileInput').value = '';
+  // Reset beat editor
+  beatRows = 1;
+  document.getElementById('beatEditorContainer').innerHTML = `
+    <div class="beat-editor-row" id="beat-row-0">
+      <div class="beat-editor-num">1</div>
+      <div class="beat-editor-fields">
+        <span class="beat-anchor-label">Beat starts when:</span>
+        <input class="xp-textinput" placeholder='e.g. MORGAN > "You\'re late"' id="beat-anchor-0" />
+        <input class="xp-textinput" placeholder="↑ Where you're coming from..." id="beat-from-0" style="border-left:3px solid #006600;" />
+        <input class="xp-textinput" placeholder="↓ Where you're going..." id="beat-to-0" style="border-left:3px solid #884400;" />
+      </div>
+    </div>`;
+  goTo('screen-import');
+}
+
+function saveOnly() {
+  const prevEditing = window._editingScriptIdx;
+  importScript();
+  // After saving, stay on files screen instead of going to char select
+  // importScript calls openScript which goes to char select — counteract that
+  window._saveOnlyMode = true;
+}
+
+function editSelected() {
+  if (currentScriptIdx < 0) return;
+  const s = scripts[currentScriptIdx];
+
+  // Pre-fill the import screen with this script's existing data
+  document.getElementById('importTitle').value = s.title || '';
+  document.getElementById('importMyChar').value = s.myChar || '';
+
+  // Restore extracted text so OK will re-parse
+  extractedScriptText = s._rawText || '';
+  detectedCharacterNames = s._knownChars || [];
+  pasteMode = false;
+
+  // Show upload status if we have raw text
+  if (s._rawText) {
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('uploadStatus').style.display = 'block';
+    document.getElementById('uploadFileName').textContent = s.title;
+    document.getElementById('uploadStats').textContent = 'Previously uploaded — re-upload to replace, or just edit beats below';
+    // Rebuild char chips
+    if (s._knownChars && s._knownChars.length) {
+      document.getElementById('manualCharInput').value = s._knownChars.join(', ');
+      buildCharChipsFromInput(s._knownChars.join(', '));
+      // Re-select myChar chip
+      setTimeout(() => {
+        const chips = document.querySelectorAll('#detectedChars div');
+        chips.forEach(chip => {
+          if (chip.textContent === s.myChar) {
+            chip.style.background = '#cc0000';
+            chip.style.borderColor = '#880000';
+            chip.style.color = 'white';
+          }
+        });
+      }, 50);
+    }
+  }
+
+  // Restore beat data
+  // Reset beat editor first
+  beatRows = 1;
+  document.getElementById('beatEditorContainer').innerHTML = `
+    <div class="beat-editor-row" id="beat-row-0">
+      <div class="beat-editor-num">1</div>
+      <div class="beat-editor-fields">
+        <span class="beat-anchor-label">Beat starts when:</span>
+        <input class="xp-textinput" placeholder='e.g. MORGAN > "You\'re late"' id="beat-anchor-0" />
+        <input class="xp-textinput" placeholder="↑ Where you're coming from..." id="beat-from-0" style="border-left:3px solid #006600;" />
+        <input class="xp-textinput" placeholder="↓ Where you're going..." id="beat-to-0" style="border-left:3px solid #884400;" />
+      </div>
+    </div>`;
+
+  if (s.beats && s.beats.length) {
+    s.beats.forEach((beat, i) => {
+      if (i > 0) addBeatRow();
+    });
+    // Fill values after all rows are added
+    setTimeout(() => {
+      s.beats.forEach((beat, i) => {
+        const anchorEl = document.getElementById(`beat-anchor-${i}`);
+        const fromEl   = document.getElementById(`beat-from-${i}`);
+        const toEl     = document.getElementById(`beat-to-${i}`);
+        if (anchorEl) anchorEl.value = beat.anchor || '';
+        if (fromEl)   fromEl.value   = beat.from   || '';
+        if (toEl)     toEl.value     = beat.to     || '';
+      });
+    }, 80);
+  }
+
+  // Mark as editing so importScript() updates instead of adding new
+  window._editingScriptIdx = currentScriptIdx;
+  document.getElementById('importStatusBar').textContent = `Editing: ${s.title}`;
+  document.getElementById('importScreenTitle').textContent = `Editing: ${s.title}`;
+  goTo('screen-import');
+}
+
+function openScript(i) {
+  const s = scripts[i];
+  currentScriptIdx = i;
+
+  charColorMap = {};
+  colorIdx = 0;
+
+  // Build char list
+  const chars = getCharacters(s.script);
+  const charList = document.getElementById('charList');
+  charList.innerHTML = '';
+  selectedChar = '';
+  selectedCharIdx = -1;
+
+  chars.forEach((c, idx) => {
+    // Assign colors
+    if (!charColorMap[c]) { charColorMap[c] = colorIdx++ % 4; }
+
+    const lineCount = s.script.filter(b => b.char === c).length;
+    const isMe = c === s.myChar;
+    const div = document.createElement('div');
+    div.className = `char-item ${isMe ? 'selected' : ''}`;
+    div.innerHTML = `
+      <div class="char-initial" style="${isMe ? 'background:linear-gradient(135deg,#aa0000,#ff4444)' : ''}">${c[0]}</div>
+      <div class="char-name-big">${c}${isMe?' (you)':''}</div>
+      <div class="char-count">${lineCount} lines</div>`;
+    div.onclick = () => {
+      document.querySelectorAll('.char-item').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+      selectedChar = c;
+      selectedCharIdx = idx;
+      document.getElementById('charStatus').textContent = `Playing ${c} — ${lineCount} lines`;
+      document.getElementById('importMyChar').value = c;
+    };
+    charList.appendChild(div);
+
+    if (isMe) { selectedChar = c; selectedCharIdx = idx; document.getElementById('charStatus').textContent = `Playing ${c} — ${lineCount} lines`; }
+  });
+
+  document.getElementById('charScreenTitle').textContent = `${s.title} — Choose Character`;
+  goTo('screen-chars');
+}
+
+// ── Study mode ────────────────────────────────────────────────────────────────
+function startStudy() {
+  if (!selectedChar) { showToast('Choose a character first'); return; }
+  goTo('screen-beatselect');
+  buildBeatSelectScreen();
+}
+
+function buildBeatSelectScreen() {
+  const s = scripts[currentScriptIdx];
+  const container = document.getElementById('beatSelectList');
+  container.innerHTML = '';
+
+  // Always show "From the beginning"
+  const startDiv = document.createElement('div');
+  startDiv.className = 'char-item selected';
+  startDiv.innerHTML = `
+    <div class="char-initial" style="background:linear-gradient(135deg,#006600,#44aa44);font-size:12px;">▶</div>
+    <div style="flex:1">
+      <div class="char-name-big">From the beginning</div>
+      <div class="char-count">Start at line 1</div>
+    </div>`;
+  startDiv.onclick = () => {
+    document.querySelectorAll('#beatSelectList .char-item').forEach(el => el.classList.remove('selected'));
+    startDiv.classList.add('selected');
+    document.getElementById('beatSelectStatus').textContent = 'Starting from the beginning';
+    window._selectedStartCursor = 0;
+    window._selectedStartBeat = -1;
+  };
+  container.appendChild(startDiv);
+  window._selectedStartCursor = 0;
+  window._selectedStartBeat = -1;
+
+  // Add each beat if they exist
+  if (s.beats && s.beats.length) {
+    s.beats.forEach((beat, i) => {
+      const div = document.createElement('div');
+      div.className = 'char-item';
+      div.innerHTML = `
+        <div class="char-initial" style="background:linear-gradient(135deg,#0a246a,#3d6bc1)">${i+1}</div>
+        <div style="flex:1">
+          <div class="char-name-big">Beat ${i+1}</div>
+          <div class="char-count" style="color:#006600">↑ ${beat.from ? beat.from.slice(0,40)+'...' : 'No note'}</div>
+          <div class="char-count" style="color:#884400">↓ ${beat.to ? beat.to.slice(0,40)+'...' : 'No note'}</div>
+        </div>`;
+      div.onclick = () => {
+        document.querySelectorAll('#beatSelectList .char-item').forEach(el => el.classList.remove('selected'));
+        div.classList.add('selected');
+        window._selectedStartCursor = beat.startIdx || 0;
+        window._selectedStartBeat = i;
+        document.getElementById('beatSelectStatus').textContent = `Starting at Beat ${i+1}`;
+      };
+      container.appendChild(div);
+    });
+  } else {
+    const noBeats = document.createElement('div');
+    noBeats.style.cssText = 'padding:12px;font-size:12px;color:#666;text-align:center;';
+    noBeats.textContent = 'No beats defined — you can add them in the import screen.';
+    container.appendChild(noBeats);
+  }
+}
+
+function launchStudy() {
+  const s = scripts[currentScriptIdx];
+  charColorMap = {};
+  colorIdx = 0;
+  getCharacters(s.script).forEach(c => {
+    if (c !== selectedChar && !c.isStage) charColorMap[c] = colorIdx++ % 4;
+  });
+
+  const chosenBeat = (window._selectedStartBeat >= 0) ? window._selectedStartBeat : 0;
+  const s2 = scripts[currentScriptIdx];
+  // Use the beat's actual startIdx as cursor start
+  cursor = (s2.beats && s2.beats[chosenBeat]) ? (s2.beats[chosenBeat].startIdx || 0) : (window._selectedStartCursor || 0);
+  window._currentBeatIdx = chosenBeat;
+  window._lockedBeatIdx = chosenBeat; // lock banner to chosen beat
+  mode = 'run';
+  hintLevel = 0;
+  lineRevealed = false;
+
+  document.getElementById('studyTitle').textContent = `${s.title} — ${selectedChar}`;
+  updateModeUI();
+  renderChat();
+  goTo('screen-study');
+  // Always auto-advance — finds first my-line within this beat
+  const s3 = scripts[currentScriptIdx];
+  const chosenBeatIdx = window._currentBeatIdx || 0;
+  const nextBeatStart = (s3.beats && s3.beats[chosenBeatIdx + 1])
+    ? s3.beats[chosenBeatIdx + 1].startIdx
+    : s3.script.length;
+  setTimeout(() => autoAdvanceToMyLineBounded(nextBeatStart), 50);
+}
+
+function autoAdvanceToMyLineBounded(limit) {
+  if (mode !== 'run') return;
+  const s = scripts[currentScriptIdx];
+  function step() {
+    if (cursor >= s.script.length - 1) return;
+    const beat = s.script[cursor];
+    const isMe = !beat.isStage && beat.char === selectedChar;
+    if (isMe) return; // stop — found my line
+    // Stop if we've reached the limit AND the next position is my line or past limit
+    if (cursor >= limit) return;
+    const delay = beat.isStage ? 300 : 600;
+    setTimeout(() => {
+      cursor++;
+      hintLevel = 0;
+      lineRevealed = false;
+      renderChat();
+      step();
+    }, delay);
+  }
+  step();
+}
+
+function renderChat() {
+  const s = scripts[currentScriptIdx];
+  const area = document.getElementById('chatArea');
+  area.innerHTML = '';
+
+  // Only render last 10 non-stage beats so chat starts full with no blank space
+  const visibleBeats = [];
+  for (let i = 0; i <= cursor; i++) {
+    if (!s.script[i].isStage) visibleBeats.push(i);
+  }
+  const startFrom = Math.max(0, visibleBeats.length - 10);
+  const renderFrom = visibleBeats.length > 0 ? visibleBeats[startFrom] : 0;
+
+  // Track which beat each script index belongs to
+  function getBeatIdxForScript(scriptIdx) {
+    if (!s.beats || !s.beats.length) return 0;
+    let b = 0;
+    for (let j = 0; j < s.beats.length; j++) {
+      if (s.beats[j].startIdx <= scriptIdx) b = j;
+    }
+    return b;
+  }
+
+  let lastRenderedBeat = getBeatIdxForScript(renderFrom);
+  // Don't show divider for the very first beat we render
+  let firstLine = true;
+
+  for (let i = renderFrom; i <= cursor; i++) {
+    const beat = s.script[i];
+    const isMe = beat.char === selectedChar;
+    const isCurrent = i === cursor;
+    const isPending = isCurrent && mode === 'run' && isMe && !lineRevealed;
+    const isHinting = isCurrent && mode === 'run' && isMe && hintLevel > 0 && !lineRevealed;
+
+    const div = document.createElement('div');
+
+    if (beat.isStage) {
+      // Stage directions are hidden — this app is for line practice only
+      continue;
+    }
+
+    // Check if we've crossed into a new beat — insert divider
+    if (!firstLine && s.beats && s.beats.length > 1) {
+      const thisBeatIdx = getBeatIdxForScript(i);
+      if (thisBeatIdx !== lastRenderedBeat) {
+        const divider = document.createElement('div');
+        divider.className = 'beat-divider-line msg-line';
+        divider.textContent = `BEAT ${thisBeatIdx + 1}`;
+        area.appendChild(divider);
+        lastRenderedBeat = thisBeatIdx;
+      }
+    }
+    firstLine = false;
+
+    {
+      div.className = `msg-line ${isMe ? 'msg-me' : `char-color-${charColorMap[beat.char]||0}`}`;
+      if (isPending && hintLevel === 0) div.classList.add('msg-hidden');
+      if (isHinting) div.classList.add('msg-hint');
+
+      const user = document.createElement('span');
+      user.className = 'msg-username';
+      user.textContent = beat.char;
+
+      const colon = document.createElement('span');
+      colon.className = 'msg-colon';
+      colon.textContent = ':';
+
+      const text = document.createElement('span');
+      text.className = 'msg-text';
+
+      if (isPending && hintLevel === 0) {
+        text.textContent = beat.text; // hidden via CSS
+        text.onclick = () => { lineRevealed = true; hintLevel = 999; renderChat(); };
+      } else if (isHinting) {
+        const words = beat.text.split(' ');
+        const shown = words.slice(0, hintLevel).join(' ');
+        const remaining = words.length - hintLevel;
+        text.textContent = shown + ` [+${remaining} more word${remaining>1?'s':''}]`;
+      } else {
+        text.textContent = beat.text;
+      }
+
+      div.appendChild(user);
+      div.appendChild(colon);
+      div.appendChild(text);
+    }
+
+    area.appendChild(div);
+  }
+
+  updateBeatBanner();
+  updateProgress();
+  trimChatLines();
+}
+
+function updateBeatBanner() {
+  const s = scripts[currentScriptIdx];
+  if (!s.beats || !s.beats.length) {
+    document.getElementById('beatTitle').textContent = 'NO BEAT INFO';
+    document.getElementById('beatFrom').textContent = 'Add beat notes in the import screen';
+    document.getElementById('beatTo').textContent = '—';
+    return;
+  }
+
+  // Use locked beat if set (user picked a beat to start from)
+  // Only derive from cursor once lock is cleared (user manually advanced)
+  let beatIdx;
+  if (window._lockedBeatIdx !== undefined && window._lockedBeatIdx !== null) {
+    beatIdx = window._lockedBeatIdx;
+  } else {
+    beatIdx = 0;
+    for (let i = 0; i < s.beats.length; i++) {
+      if (s.beats[i].startIdx <= cursor) beatIdx = i;
+    }
+  }
+
+  window._currentBeatIdx = beatIdx;
+  const beat = s.beats[beatIdx];
+  document.getElementById('beatTitle').textContent = `BEAT ${beatIdx + 1} of ${s.beats.length}`;
+  document.getElementById('beatFrom').textContent = beat.from || '—';
+  document.getElementById('beatTo').textContent = beat.to || '—';
+}
+
+function updateProgress() {
+  const s = scripts[currentScriptIdx];
+  document.getElementById('progressLabel').textContent = `${cursor+1} / ${s.script.length}`;
+}
+
+function showDebugInfo() {
+  const s = scripts[currentScriptIdx];
+  let lines = [
+    `cursor: ${cursor}`,
+    `_currentBeatIdx: ${window._currentBeatIdx}`,
+    `selectedChar: ${selectedChar}`,
+    `beats:`
+  ];
+  if (s.beats) {
+    s.beats.forEach((b,i) => {
+      lines.push(`  [${i}] startIdx=${b.startIdx} anchor="${(b.anchor||'').slice(0,30)}"`);
+    });
+  }
+  const cur = s.script[cursor];
+  lines.push(`at cursor: ${cur?.char} — "${cur?.text?.slice(0,40)}"`);
+
+  // Show as a toast-style overlay
+  const dbgDiv = document.getElementById('debugOverlay') || (() => {
+    const d = document.createElement('div');
+    d.id = 'debugOverlay';
+    d.style.cssText = `position:fixed;bottom:80px;left:8px;right:8px;background:#fffbe8;border:2px solid #888;
+      padding:10px;font-size:11px;font-family:monospace;z-index:9999;white-space:pre;
+      box-shadow:2px 2px 6px rgba(0,0,0,0.4);max-height:200px;overflow-y:auto;`;
+    document.body.appendChild(d);
+    return d;
+  })();
+  dbgDiv.textContent = lines.join('\n');
+  dbgDiv.style.display = 'block';
+  // Tap to dismiss
+  dbgDiv.onclick = () => dbgDiv.style.display = 'none';
+}
+
+function toggleBeatMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('beatDropdown');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) { dd.classList.remove('open'); return; }
+
+  const s = scripts[currentScriptIdx];
+  const items = document.getElementById('beatDropdownItems');
+  items.innerHTML = '';
+
+  if (!s.beats || !s.beats.length) {
+    items.innerHTML = '<div class="people-dropdown-item" style="color:#888;cursor:default">No beats defined</div>';
+  } else {
+    // Find current beat to exclude it
+    let currentBeatIdx = window._currentBeatIdx || 0;
+
+    s.beats.forEach((beat, i) => {
+      if (i === currentBeatIdx) return; // skip current beat
+      const div = document.createElement('div');
+      div.className = 'people-dropdown-item';
+      div.innerHTML = `<span style="color:#0000aa;font-weight:bold">Beat ${i + 1}</span>&nbsp;
+        <span style="color:#006600;font-size:11px">${beat.from ? beat.from.slice(0, 35) + '...' : ''}</span>`;
+      div.onclick = () => {
+        window._currentBeatIdx = i;
+        window._lockedBeatIdx = i; // lock to this beat
+        window._selectedStartBeat = i;
+        cursor = beat.startIdx || 0;
+        hintLevel = 0;
+        lineRevealed = false;
+        renderChat();
+        const nextBeatStart = s.beats[i+1] ? s.beats[i+1].startIdx : s.script.length;
+        autoAdvanceToMyLineBounded(nextBeatStart);
+        dd.classList.remove('open');
+        showToast(`Jumped to Beat ${i + 1}`);
+      };
+      items.appendChild(div);
+    });
+  }
+
+  dd.classList.add('open');
+  setTimeout(() => {
+    document.addEventListener('click', () => dd.classList.remove('open'), {once: true});
+  }, 0);
+}
+
+function togglePeopleMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('peopleDropdown');
+  const isOpen = dd.classList.contains('open');
+
+  // Close if already open
+  if (isOpen) { dd.classList.remove('open'); return; }
+
+  // Build the character list — exclude current player
+  const s = scripts[currentScriptIdx];
+  const chars = getCharacters(s.script).filter(c => c !== selectedChar);
+  const items = document.getElementById('peopleDropdownItems');
+  items.innerHTML = '';
+
+  if (!chars.length) {
+    items.innerHTML = '<div class="people-dropdown-item" style="color:#888;cursor:default">No other characters</div>';
+  } else {
+    chars.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'people-dropdown-item';
+      const colorClass = charColorMap[c] || 0;
+      const colors = ['#0000cc','#006600','#8800aa','#aa4400'];
+      div.innerHTML = `<span style="color:${colors[colorClass % 4]};font-weight:bold;font-size:13px">●</span> ${c}`;
+      div.onclick = () => {
+        switchCharacter(c);
+        dd.classList.remove('open');
+      };
+      items.appendChild(div);
+    });
+  }
+
+  dd.classList.add('open');
+
+  // Close when clicking anywhere else
+  setTimeout(() => {
+    document.addEventListener('click', () => dd.classList.remove('open'), {once: true});
+  }, 0);
+}
+
+function switchCharacter(newChar) {
+  selectedChar = newChar;
+  // Reset color map
+  charColorMap = {};
+  colorIdx = 0;
+  const s = scripts[currentScriptIdx];
+  getCharacters(s.script).forEach(c => {
+    if (c !== selectedChar) charColorMap[c] = colorIdx++ % 4;
+  });
+  // Update title
+  document.getElementById('studyTitle').textContent = `${s.title} — ${newChar}`;
+  // Reset study state
+  hintLevel = 0;
+  lineRevealed = false;
+  updateModeUI();
+  renderChat();
+  autoAdvanceToMyLine();
+  showToast(`Now playing ${newChar}`);
+}
+
+function scrollChatToBottom() {
+  // No-op — chat uses overflow:hidden with flex-end, new lines push old ones up
+}
+
+function trimChatLines() {
+  // Keep only the last 10 lines visible in the chat area
+  const area = document.getElementById('chatArea');
+  const lines = area.querySelectorAll('.msg-line');
+  if (lines.length > 10) {
+    Array.from(lines).slice(0, lines.length - 10).forEach(el => el.remove());
+  }
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+// Similarity score 0-1 between typed and actual line (ignores punctuation/case)
+function lineSimilarity(typed, actual) {
+  const clean = s => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+  const a = clean(typed).split(' ');
+  const b = clean(actual).split(' ');
+  if (!b.length) return 1;
+  const matches = a.filter(w => b.includes(w)).length;
+  return matches / b.length;
+}
+
+function sendLine() {
+  const s = scripts[currentScriptIdx];
+  const beat = s.script[cursor];
+  const isMe = beat.char === selectedChar;
+  const input = document.getElementById('lineInput');
+  const typed = input.value.trim();
+
+  if (mode === 'run' && isMe && !lineRevealed) {
+    if (!typed) {
+      // Empty send — just reveal
+      lineRevealed = true;
+      hintLevel = 999;
+      renderChat();
+      return;
+    }
+    // Check similarity — 80% match = good enough, auto-advance
+    const score = lineSimilarity(typed, beat.text);
+    lineRevealed = true;
+    hintLevel = 999;
+    input.value = '';
+    renderChat();
+    if (score >= 0.8) {
+      // Good match — auto advance after brief pause
+      setTimeout(() => {
+        advanceAndFlow();
+      }, 500);
+    } else if (score >= 0.5) {
+      showToast('Close! Check the line above then press Send to continue.');
+    } else {
+      showToast('Not quite — read the line above then press Send to continue.');
+    }
+    return;
+  }
+
+  // Not my line or already revealed — just advance
+  input.value = '';
+  advanceAndFlow();
+}
+
+function advanceAndFlow() {
+  const s = scripts[currentScriptIdx];
+  // User manually advanced — unlock beat banner so it derives from cursor
+  window._lockedBeatIdx = null;
+  if (cursor < s.script.length - 1) {
+    cursor++;
+    hintLevel = 0;
+    lineRevealed = false;
+    renderChat();
+    autoAdvanceToMyLine();
+  } else {
+    showToast('End of script! 🎉');
+  }
+}
+
+function nextLine() {
+  const s = scripts[currentScriptIdx];
+  const beat = s.script[cursor];
+  const isMe = beat.char === selectedChar;
+
+  // If it's my hidden line, reveal it first
+  if (mode === 'run' && isMe && !lineRevealed) {
+    lineRevealed = true; hintLevel = 999;
+    renderChat(); return;
+  }
+
+  // Advance to next beat
+  if (cursor < s.script.length - 1) {
+    cursor++; hintLevel = 0; lineRevealed = false;
+    renderChat();
+    // In run mode, auto-advance past other characters and stage directions
+    // until we hit MY line or end of script
+    autoAdvanceToMyLine();
+  } else {
+    showToast('End of script! 🎉');
+  }
+}
+
+function autoAdvanceToMyLine() {
+  const s = scripts[currentScriptIdx];
+  // No beat boundary when called mid-scene — just find next my-line
+  autoAdvanceToMyLineBounded(s.script.length);
+}
+
+function prevLine() {
+  window._lockedBeatIdx = null; // user navigating manually
+  const s = scripts[currentScriptIdx];
+
+  // Find the previous line that belongs to the user (my character)
+  // Start searching backwards from cursor - 1
+  let target = -1;
+  for (let i = cursor - 1; i >= 0; i--) {
+    const beat = s.script[i];
+    if (!beat.isStage && beat.char === selectedChar) {
+      target = i;
+      break;
+    }
+  }
+
+  if (target < 0) { showToast('No previous lines to go back to'); return; }
+
+  // Jump back to that line, unreveal it so user has to practice it again
+  cursor = target;
+  hintLevel = 0;
+  lineRevealed = false;
+  renderChat();
+  // Don't autoAdvance — stop here so user can practice this line
+}
+
+function showHint() {
+  const s = scripts[currentScriptIdx];
+  const beat = s.script[cursor];
+  if (beat.char !== selectedChar || lineRevealed || mode === 'read') return;
+  hintLevel++;
+  const words = beat.text.split(' ');
+  if (hintLevel >= words.length) { lineRevealed = true; hintLevel = 999; }
+  renderChat();
+}
+
+function skipLine() {
+  const s = scripts[currentScriptIdx];
+  lineRevealed = true;
+  hintLevel = 999;
+  renderChat();
+  setTimeout(() => nextLine(), 300);
+}
+
+function toggleMode() {
+  mode = mode === 'run' ? 'read' : 'run';
+  hintLevel = 0;
+  lineRevealed = false;
+  updateModeUI();
+  renderChat();
+}
+
+function updateModeUI() {
+  const pill = document.getElementById('modeIndicator');
+  const status = document.getElementById('studyStatus');
+  if (mode === 'run') {
+    pill.innerHTML = '<span class="mode-pill run">RUN LINES</span>';
+    status.textContent = 'Run Lines mode — your lines are hidden';
+    document.getElementById('hintBtn').disabled = false;
+  } else {
+    pill.innerHTML = '<span class="mode-pill read">FULL READ</span>';
+    status.textContent = 'Full Read mode — all lines visible';
+    document.getElementById('hintBtn').disabled = true;
+  }
+}
+
+function handleInputKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendLine();
+  }
+}
+
+// ── Storage ───────────────────────────────────────────────────────────────────
+function saveToStorage() {
+  try { localStorage.setItem('scriptdeck_scripts', JSON.stringify(scripts)); } catch(e) {}
+}
+
+function loadFromStorage() {
+  try {
+    const raw = localStorage.getItem('scriptdeck_scripts');
+    if (raw) { scripts = JSON.parse(raw); updateFileList(); }
+  } catch(e) {}
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadFromStorage();
+</script>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+let extractedScriptText = '';
+let detectedCharacterNames = [];
+let pasteMode = false;
+
+// ── File Upload Handler ───────────────────────────────────────────────────────
+async function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const ext = file.name.split('.').pop().toLowerCase();
+  setUploadProgress(true, 'Reading file...');
+
+  try {
+    if (ext === 'pdf') {
+      await extractPDF(file);
+    } else {
+      // Plain text / fountain / fdx
+      const text = await file.text();
+      extractedScriptText = text;
+      onExtractionDone(file.name, text);
+    }
+  } catch(e) {
+    setUploadProgress(false);
+    showToast('Could not read file: ' + e.message);
+  }
+}
+
+async function extractPDF(file) {
+  if (typeof pdfjsLib === 'undefined') {
+    showToast('PDF reader not loaded — try pasting text instead');
+    setUploadProgress(false);
+    return;
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  setUploadProgressBar(10, 'Loading PDF...');
+
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const totalPages = pdf.numPages;
+  let fullText = '';
+
+  for (let i = 1; i <= totalPages; i++) {
+    setUploadProgressBar(10 + (i / totalPages * 85), `Reading page ${i} of ${totalPages}...`);
+    const page = await pdf.getPage(i);
+    const pageContent = await page.getTextContent();
+    const viewport = page.getViewport({scale: 1});
+    const pageWidth = viewport.width;
+
+    // Group items by Y position (within 3pt tolerance = same line)
+    const lineMap = {};
+    for (const item of pageContent.items) {
+      const y = Math.round(item.transform[5] / 3) * 3;
+      const x = item.transform[4];
+      if (!lineMap[y]) lineMap[y] = {items: [], minX: x};
+      lineMap[y].items.push(item.str);
+      if (x < lineMap[y].minX) lineMap[y].minX = x;
+    }
+
+    const sortedYs = Object.keys(lineMap).map(Number).sort((a,b) => b - a);
+    for (const y of sortedYs) {
+      const lineData = lineMap[y];
+      const lineText = lineData.items.join(' ').trim();
+      if (!lineText) continue;
+
+      // Encode x position as a tag at the start of the line
+      // Parser will read this to determine line type
+      const xPos = Math.round(lineData.minX);
+      // Strip null bytes and zero-width characters that some PDFs embed
+      const cleanedText = lineText.replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '');
+      if (cleanedText) fullText += `[x:${xPos}]${cleanedText}\n`;
+    }
+    fullText += '\n';
+  }
+
+  setUploadProgressBar(100, 'Done!');
+  extractedScriptText = fullText;
+  onExtractionDone(file.name, fullText);
+}
+
+function onExtractionDone(filename, text) {
+  setUploadProgress(false);
+
+  const lineCount = text.split('\n').filter(l => l.trim()).length;
+  document.getElementById('uploadStatus').style.display = 'block';
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('uploadFileName').textContent = filename;
+  document.getElementById('uploadStats').textContent = `${lineCount} lines extracted — now enter the character names below`;
+
+  // Auto-fill title from filename
+  const titleEl = document.getElementById('importTitle');
+  if (!titleEl.value) {
+    titleEl.value = filename
+      .replace(/\.(pdf|txt|fdx|fountain)$/i, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  // If character names are already filled (e.g. from edit flow), keep them
+  const existingNames = document.getElementById('manualCharInput').value.trim();
+  if (existingNames) {
+    buildCharChipsFromInput(existingNames);
+    document.getElementById('importStatusBar').textContent = 'Script loaded — character names preserved. Click OK to save.';
+    showToast('✅ Script loaded!');
+  } else {
+    document.getElementById('importStatusBar').textContent = 'Script loaded — type the character names below';
+    document.getElementById('manualCharInput').focus();
+    showToast('✅ Script loaded! Now type the character names.');
+  }
+}
+
+// Build clickable chips as the user types names
+function buildCharChipsFromInput(val) {
+  const names = val.split(',')
+    .map(n => n.trim().toUpperCase())
+    .filter(n => n.length > 0);
+
+  detectedCharacterNames = names;
+
+  // Render selectable chips in the "click yours" row
+  const container = document.getElementById('detectedChars');
+  container.innerHTML = '';
+
+  names.forEach(name => {
+    const chip = document.createElement('div');
+    chip.style.cssText = `
+      background: #ddeeff; border: 2px solid #7090b8; padding: 4px 12px;
+      font-size: 12px; cursor: pointer; font-weight: bold; color: #00008b;
+      transition: all 0.1s;
+    `;
+    chip.textContent = name;
+    chip.onclick = () => {
+      // Deselect all
+      container.querySelectorAll('div').forEach(d => {
+        d.style.background = '#ddeeff';
+        d.style.borderColor = '#7090b8';
+        d.style.color = '#00008b';
+      });
+      // Select this one
+      chip.style.background = '#cc0000';
+      chip.style.borderColor = '#880000';
+      chip.style.color = 'white';
+      document.getElementById('importMyChar').value = name;
+      document.getElementById('importStatusBar').textContent = `Playing ${name} — click OK to continue`;
+      showToast(`You are playing ${name}`);
+    };
+    container.appendChild(chip);
+  });
+}
+
+// ── Character auto-detection ─────────────────────────────────────────────────
+function detectCharacters(text) {
+  const lines = text.split('\n');
+  const candidateCounts = {};
+  const dialogueCounts  = {};
+
+  const SKIP = new Set([
+    'INT','EXT','FADE','CUT','DISSOLVE','SMASH','TITLE','THE END',
+    'CONTINUED','MORE','OVER','SCENE','ACT ONE','ACT TWO','ACT THREE',
+    'ACT I','ACT II','ACT III','COLD OPEN','END OF ACT','TAG','TEASER',
+    'EPILOGUE','PROLOGUE','FLASHBACK','END FLASHBACK','INTERCUT','MONTAGE',
+    'SUPER','VO','OS','OC','INSERT','END INSERT','BLACK','SILENCE',
+    'LATER','CONTINUOUS','SAME TIME','MOMENTS LATER',
+  ]);
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw  = lines[i];
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.length > 50) continue;
+    if (/^[\d\s]+$/.test(line)) continue;
+    if (/^page\s+\d+/i.test(line)) continue;
+    if (/^(INT|EXT)[\. ]/i.test(line)) continue;
+
+    // Strip parentheticals like (CONT'D), (V.O.)
+    const stripped = line.replace(/\s*\(.*?\)/g, '').trim();
+    if (!stripped || stripped.length < 2 || stripped.length > 40) continue;
+
+    const letters = stripped.replace(/[^a-zA-Z]/g, '');
+    if (letters.length < 2) continue;
+    const upperLetters = stripped.replace(/[^A-Z]/g, '');
+    const ratio = upperLetters.length / letters.length;
+    if (ratio < 0.65) continue;
+
+    const key = stripped
+      .replace(/\s*\(.*?\)/g, '')
+      .replace(/[:.!?]$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toUpperCase();
+
+    if (!key || key.length < 2) continue;
+    if (SKIP.has(key)) continue;
+    // Skip if it looks like a scene heading
+    if (/^(INT|EXT)[\. ]/.test(key)) continue;
+
+    // Find next non-empty line
+    let nextIdx = i + 1;
+    while (nextIdx < lines.length && !lines[nextIdx].trim()) nextIdx++;
+    const nextLine = lines[nextIdx]?.trim() || '';
+    const followedByDialogue = nextLine.length > stripped.length && nextLine.length > 8;
+    const indented = raw.search(/\S/) > 12;
+
+    const score = 1 + (followedByDialogue ? 4 : 0) + (indented ? 2 : 0);
+    candidateCounts[key] = (candidateCounts[key] || 0) + score;
+    if (followedByDialogue) dialogueCounts[key] = (dialogueCounts[key] || 0) + 1;
+  }
+
+  let results = Object.entries(candidateCounts)
+    .filter(([key]) => (dialogueCounts[key] || 0) >= 1)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name)
+    .slice(0, 25);
+
+  // Fallback: relax filter if nothing found
+  if (results.length === 0) {
+    results = Object.entries(candidateCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name)
+      .slice(0, 25);
+  }
+
+  return results;
+}
+
+// ── Progress helpers ──────────────────────────────────────────────────────────
+function setUploadProgress(show, label='') {
+  document.getElementById('uploadProgress').style.display = show ? 'block' : 'none';
+  if (label) document.getElementById('uploadProgressLabel').textContent = label;
+  if (!show) document.getElementById('uploadProgressBar').style.width = '0%';
+}
+
+function setUploadProgressBar(pct, label) {
+  document.getElementById('uploadProgress').style.display = 'block';
+  document.getElementById('uploadProgressBar').style.width = pct + '%';
+  document.getElementById('uploadProgressLabel').textContent = label;
+}
+
+function clearUpload() {
+  extractedScriptText = '';
+  detectedCharacterNames = [];
+  document.getElementById('uploadStatus').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('pdfFileInput').value = '';
+  document.getElementById('importMyChar').value = '';
+  document.getElementById('importStatusBar').textContent = 'Upload a script file to begin';
+}
+
+function togglePasteFallback() {
+  const el = document.getElementById('pasteFallback');
+  const isHidden = el.style.display === 'none';
+  el.style.display = isHidden ? 'block' : 'none';
+  pasteMode = isHidden;
+}
+
+// importScript reads extractedScriptText directly — no override needed
+
+</script>
+</body>
+</html>
