@@ -1010,6 +1010,8 @@ function parseScript(raw, knownChars) {
 
   // Check if PDF extractor added [x:NNN] position tags
   const hasTags = lines.some(l => /^\[x:\d+\]/.test(l));
+  // Reset dynamic x calibration for each new parse
+  window._charNameX = null;
 
   function flush() {
     if (currentChar && buffer.length) {
@@ -1052,25 +1054,50 @@ function parseScript(raw, knownChars) {
     if (isParenthetical(s)) continue;
 
     if (hasTags && x !== null) {
-      // Use exact x positions from PDF:
-      // x > 200  → character name zone (deeply indented ~252)
-      // x < 140  → stage direction zone (left margin ~108)
-      // 140-200  → dialogue zone (medium indent ~180)
-      if (x > 200) {
-        if (isKnownChar(s)) {
-          flush();
-          currentChar = cleanName(s);
-          buffer = [];
-        }
-        // Unknown at char position = scene heading/extra, ignore
-      } else if (x < 140) {
-        // Stage direction
+      // Dynamic x-position classification:
+      // We don't hardcode thresholds — instead we use relative positions.
+      // Character names are the MOST indented non-dialogue lines.
+      // We detect this by checking if the line is a known character name,
+      // then use that x as our "char name x" baseline.
+      // Stage directions have the LEAST indentation (left margin).
+      // Dialogue sits between the two.
+
+      // Strategy: if line matches a known char → character name (any x)
+      // Otherwise use x to distinguish stage dir vs dialogue:
+      // We track the minimum x seen for known chars to set the boundary.
+
+      if (isKnownChar(s)) {
         flush();
-        if (s.length > 3) beats.push({char: '—', text: s, isStage: true});
-        currentChar = null;
+        currentChar = cleanName(s);
+        buffer = [];
+        // Record this x as char name position for calibration
+        if (!window._charNameX || x < window._charNameX + 20) {
+          window._charNameX = x;
+          window._stageX = x - 20; // stage dirs are left of char names
+        }
       } else {
-        // Dialogue
-        if (currentChar) buffer.push(s);
+        // Determine stage dir vs dialogue using x position
+        const stageThreshold = window._charNameX ? window._charNameX - 5 : 140;
+        if (x < stageThreshold && !currentChar) {
+          // Left-margin with no active speaker = stage direction
+          if (s.length > 3) beats.push({char: '—', text: s, isStage: true});
+        } else if (x < stageThreshold && currentChar) {
+          // Left-margin while we have a speaker = likely stage direction interrupting
+          const isMixedProse = /^[A-Z][a-z]/.test(s) &&
+            s.replace(/[^a-z]/g,'').length > s.replace(/[^A-Z]/g,'').length &&
+            s.length > 15;
+          if (isMixedProse) {
+            flush();
+            beats.push({char: '—', text: s, isStage: true});
+            currentChar = null;
+          } else {
+            buffer.push(s);
+          }
+        } else if (currentChar) {
+          buffer.push(s);
+        } else {
+          // No current char, not a stage dir — likely scene heading, skip
+        }
       }
 
     } else {
