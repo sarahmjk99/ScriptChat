@@ -50,11 +50,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 0;
+  padding: 24px 12px;
 }
 
 /* ── SCREENS ── */
-.screen { display: none; width: 100%; max-width: 480px; min-height: 100vh; flex-direction: column; }
+.screen { display: none; width: 100%; max-width: 480px; min-height: auto; flex-direction: column; }
 .screen.active { display: flex; }
 
 /* ── XP WINDOW CHROME ── */
@@ -62,11 +62,11 @@ body {
   background: var(--msn-window);
   border: 1px solid var(--msn-border-dk);
   border-top: 1px solid #b0b8c0;
-  box-shadow: var(--msn-shadow);
+  box-shadow: 4px 4px 16px rgba(0,0,0,0.35);
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 100vh;
+  border-radius: 0 0 2px 2px;
 }
 
 .xp-titlebar {
@@ -386,7 +386,6 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
 
 .buddy-groups { flex: 1; overflow-y: auto; }
