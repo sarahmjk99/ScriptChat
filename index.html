@@ -237,19 +237,19 @@ body {
   border: 1px solid #b0b8c0;
   border-color: #a0a8b0 #ffffff #ffffff #a0a8b0;
   margin: 4px 6px;
-  padding: 6px 8px;
+  padding: 4px 8px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 2px;
+  gap: 0px;
   font-size: 13px;
   font-family: 'Tahoma', sans-serif;
-  line-height: 1.5;
+  line-height: 1.3;
   position: relative;
 }
 
 /* MSN message style */
-.msg-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0; }
+.msg-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0; margin-bottom: 1px; }
 .msg-username { font-weight: bold; font-size: 13px; margin-right: 2px; white-space: nowrap; flex-shrink: 0; }
 .msg-colon { font-weight: bold; margin-right: 4px; flex-shrink: 0; }
 .msg-text { color: #000; word-break: break-word; font-style: normal; }
@@ -678,7 +678,7 @@ body {
       </div>
     </div>
     <div class="xp-menubar">
-      <div class="xp-menu-item" onclick="goTo('screen-import')">File</div>
+      <div class="xp-menu-item" onclick="newScript()">File</div>
       <div class="xp-menu-item" onclick="editSelected()">Edit</div>
     </div>
 
@@ -750,50 +750,51 @@ body {
           </div>
         </div>
 
-        <!-- Preview / status -->
+        <!-- After upload -->
         <div id="uploadStatus" style="display:none;">
-          <div style="background:#e8f8e8;border:1px solid #44aa44;padding:6px 8px;font-size:12px;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:16px;">✅</span>
-            <div>
+          <div style="background:#e8f8e8;border:1px solid #44aa44;padding:6px 8px;font-size:12px;font-family:Tahoma,sans-serif;display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span>✅</span>
+            <div style="flex:1">
               <div id="uploadFileName" style="font-weight:bold;"></div>
               <div id="uploadStats" style="font-size:11px;color:#555;"></div>
             </div>
-            <button class="xp-btn" onclick="clearUpload()" style="margin-left:auto;font-size:11px;padding:2px 8px;">✕ Clear</button>
+            <button class="xp-btn" onclick="clearUpload()" style="font-size:11px;padding:2px 8px;">✕</button>
           </div>
 
-          <!-- Manual character entry -->
-          <div style="margin-top:8px;background:#fffbe8;border:1px solid #ccaa44;padding:8px;">
-            <div style="font-size:11px;font-weight:bold;color:#333;margin-bottom:5px;">
-              📋 Type in all the character names from the script:
-            </div>
-            <div style="font-size:11px;color:#666;margin-bottom:6px;">
-              Separate with commas — e.g. <b>ALEX, MORGAN, DETECTIVE KANE</b>
-            </div>
+          <!-- Step 1: Character names -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:11px;font-weight:bold;color:#333;margin-bottom:4px;font-family:Tahoma,sans-serif;">Step 1 — Enter all character names:</div>
             <input class="xp-textinput" id="manualCharInput"
-              placeholder="e.g. ALEX, MORGAN, DETECTIVE KANE"
+              placeholder="ROMEO, JULIET, NURSE, FRIAR LAWRENCE"
               oninput="buildCharChipsFromInput(this.value)"
-              style="width:100%;margin-bottom:6px;" />
+              style="width:100%;margin-bottom:5px;" />
+            <div id="charChipsRow" style="display:flex;flex-wrap:wrap;gap:4px;min-height:20px;"></div>
+          </div>
 
-            <!-- Chips appear here as they type -->
-            <div id="charChipsRow" style="display:flex;flex-wrap:wrap;gap:4px;min-height:24px;"></div>
+          <!-- Step 2: Preview (auto-populated after upload) -->
+          <div id="convertPreviewSection" style="display:none;">
+            <div style="font-size:11px;font-weight:bold;color:#333;margin-bottom:4px;font-family:Tahoma,sans-serif;">Step 2 — Review &amp; fix if needed:</div>
+            <div style="font-size:11px;color:#666;margin-bottom:4px;font-family:Tahoma,sans-serif;">Each character name should be on its own line in ALL CAPS, followed by their dialogue. Delete any junk lines.</div>
+            <textarea id="convertedScriptPreview" class="xp-textarea" style="min-height:200px;font-size:11px;font-family:Tahoma,sans-serif;" oninput="extractedScriptText=this.value"></textarea>
+            <div id="convertedStats" style="font-size:11px;color:#316ac5;font-family:Tahoma,sans-serif;margin-top:3px;"></div>
+          </div>
 
-            <div style="font-size:11px;color:#555;margin-top:6px;">
-              Click <b>your character</b> below:
-            </div>
-            <div id="detectedChars" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;"></div>
+          <!-- Your character -->
+          <div style="margin-top:6px;">
+            <div style="font-size:11px;color:#333;font-family:Tahoma,sans-serif;margin-bottom:4px;">Step 3 — Click <b>your</b> character:</div>
+            <div id="detectedChars" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
           </div>
         </div>
 
-        <!-- Fallback paste (collapsed by default) -->
+        <!-- Fallback paste -->
         <div style="margin-top:6px;">
-          <span style="font-size:11px;color:#666;cursor:pointer;text-decoration:underline;" onclick="togglePasteFallback()">▶ Or paste text manually instead</span>
+          <span style="font-size:11px;color:#666;cursor:pointer;text-decoration:underline;font-family:Tahoma,sans-serif;" onclick="togglePasteFallback()">▶ Or paste text manually instead</span>
           <div id="pasteFallback" style="display:none;margin-top:6px;">
             <textarea class="xp-textarea" id="importScriptPaste" placeholder="CHARACTER NAME&#10;Their dialogue here.&#10;&#10;OTHER CHARACTER&#10;Their line here." style="min-height:120px;" oninput="document.getElementById('importScript').value=this.value"></textarea>
             <p class="hint-text">Character names in ALL CAPS on their own line. Dialogue follows below.</p>
           </div>
         </div>
 
-        <!-- Hidden storage for extracted text -->
         <textarea id="importScriptHidden" style="display:none;"></textarea>
       </div>
 
@@ -1015,13 +1016,88 @@ function parseScript(raw, knownChars) {
 
   function flush() {
     if (currentChar && buffer.length) {
-      const text = buffer
-        .join(' ')
-        .replace(/\s*\(.*?\)/g, '')
-        .replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '') // strip null/zero-width chars
+      // Join buffer and clean up
+      let raw = buffer.join(' ')
+        .replace(/\s*\(.*?\)/g, '')           // strip parentheticals
+        .replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '')
+        .replace(/\bFTLN\s*\d+\b/gi, '')
         .replace(/\s+/g, ' ')
         .trim();
-      if (text) beats.push({char: currentChar, text, isStage: false});
+
+      // Strip embedded stage directions in brackets, but KEEP "CHARNAME [stage]" combos
+      // since those are used as speaker cue markers.
+      // Two-pass: protect char+bracket, strip bare brackets, restore.
+      if (charSet) {
+        const cAlts = Array.from(charSet).sort((a,b)=>b.length-a.length)
+          .map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+        const protectRe = new RegExp('(' + cAlts + ')\\s*(\\[[^\\]]*\\])', 'g');
+        raw = raw.replace(protectRe, '$1 §§$2§§');
+      }
+      raw = raw.replace(/\s*\[[^\]]*\]/g, '')   // strip unprotected [brackets]
+               .replace(/§§/g, '')         // restore protected ones
+               .replace(/\s*\bACT\b[^.!?]*/g, '') // strip ACT headings
+               .replace(/\s*\bSCENE\b[^.!?]*/g,'')// strip SCENE headings
+               .replace(/\s+/g, ' ').trim();
+
+      // Split on embedded speaker cues mid-text.
+      // Handles two forms:
+      //   1. "NAME dialogue..."        — bare name followed by mixed-case text
+      //   2. "NAME [stage] dialogue..."— name + bracketed stage note + dialogue
+      // We build a regex that matches any of these at a word boundary after real text.
+
+      // Build alternation from known chars, sorted longest-first to avoid partial matches
+      const charAlts = charSet
+        ? Array.from(charSet).sort((a,b) => b.length - a.length)
+            .map(c => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+            .join('|')
+        : null;
+
+      // Pattern: NAME optionally followed by [stage note], then mixed-case dialogue
+      const speakerRe = charAlts
+        ? new RegExp('(' + charAlts + ')(?:\\s*\\[.*?\\])?(?=[\\s.]*[A-Za-z])', 'g')
+        : null;
+
+      if (speakerRe) {
+        // DEBUG: log any buffer containing a known char name mid-text
+        if (raw.length > 20) {
+          const testNames = charSet ? Array.from(charSet) : [];
+          for (const n of testNames) {
+            const idx = raw.indexOf(n);
+            if (idx > 5) {
+              console.log('[flush debug] Found "' + n + '" at idx ' + idx + ' in: ' + raw.slice(0, 80));
+              break;
+            }
+          }
+        }
+        speakerRe.lastIndex = 0;
+        const parts = [];
+        let lastEnd = 0;
+        let lastChar = currentChar;
+        let match;
+        while ((match = speakerRe.exec(raw)) !== null) {
+          if (match.index === 0) {
+            // Starts with a speaker cue — just update speaker, don't push empty text
+            lastChar = match[1];
+            lastEnd = match.index + match[0].length;
+            continue;
+          }
+          // Mid-text speaker cue — push what came before, switch speaker
+          const before = raw.slice(lastEnd, match.index).trim();
+          if (before) parts.push({ char: lastChar, text: before });
+          lastChar = match[1];
+          lastEnd = match.index + match[0].length;
+        }
+        const remainder = raw.slice(lastEnd).trim();
+        if (remainder) parts.push({ char: lastChar, text: remainder });
+
+        if (parts.length > 1) {
+          parts.forEach(p => { const t = p.text.replace(/^[.\s]+/, '').trim(); if (t) beats.push({char: p.char, text: t, isStage: false}); });
+        } else {
+          if (raw) beats.push({char: currentChar, text: raw, isStage: false});
+        }
+      } else {
+        if (raw) beats.push({char: currentChar, text: raw, isStage: false});
+      }
     }
     if (buffer.length) currentChar = null;
     buffer = [];
@@ -1036,8 +1112,47 @@ function parseScript(raw, knownChars) {
     return charSet.has(cleanName(s));
   }
 
+  // If a line starts with a known char name (possibly followed by a line number like 1.1.6
+  // or inline dialogue), split it apart and return {char, dialogue}
+  function splitCharLine(s) {
+    if (!charSet) return null;
+    const up = s.toUpperCase();
+    for (const c of charSet) {
+      if (up.startsWith(c) && (up.length === c.length || /[^A-Z]/.test(up[c.length]))) {
+        const rest = s.slice(c.length).trim();
+        if (!rest) return { char: c, dialogue: '' };
+        // Line number like "1.1.6" optionally followed by dialogue
+        const lineNumMatch = rest.match(/^[\d.]+\s*(.*)/);
+        if (lineNumMatch) return { char: c, dialogue: lineNumMatch[1].trim() };
+        // Inline dialogue with no line number
+        return { char: c, dialogue: rest };
+      }
+    }
+    return null;
+  }
+
   function isParenthetical(s) {
     return /^\(.*\)$/.test(s.trim());
+  }
+
+  // Detects lines that look like a speaker cue even if the character isn't in knownChars.
+  // e.g. "GREGORY", "FRIAR JOHN", "FIRST SERVANT 1.1.6", "2ND WATCHMAN"
+  // Rules: mostly uppercase, short, no sentence-ending punctuation mid-string, not a stage dir
+  function looksLikeSpeakerCue(s) {
+    // Strip bracketed stage notes like "[enters]", "[exits]", then trailing line numbers
+    const t = s.replace(/\s*\[.*?\]/g, '').replace(/[\d.\s]+$/, '').trim();
+    if (!t || t.length < 2 || t.length > 40) return false;
+    if (isStageDir(t)) return false;
+    if (/[.!?,;]/.test(t.slice(0, -1))) return false;
+    const letters = t.replace(/[^a-zA-Z]/g, '');
+    if (!letters || letters.length < 2) return false;
+    const upper = letters.replace(/[a-z]/g, '');
+    return (upper.length / letters.length) >= 0.85;
+  }
+
+  // Same as looksLikeSpeakerCue but returns the cleaned name (with brackets stripped)
+  function extractSpeakerCueName(s) {
+    return s.replace(/\s*\[.*?\]/g, '').replace(/[\d.\s]+$/, '').trim().toUpperCase();
   }
 
   function parseLine(line) {
@@ -1046,12 +1161,42 @@ function parseScript(raw, knownChars) {
     return { x: null, text: line.trim() };
   }
 
+  // Build a set of name prefixes for multi-word known chars (e.g. "LADY" from "LADY CAPULET")
+  const charPrefixes = {};
+  if (charSet) {
+    for (const c of charSet) {
+      const words = c.split(' ');
+      if (words.length > 1) {
+        for (let w = 1; w < words.length; w++) {
+          const prefix = words.slice(0, w).join(' ');
+          if (!charPrefixes[prefix]) charPrefixes[prefix] = [];
+          charPrefixes[prefix].push(c);
+        }
+      }
+    }
+  }
+
   for (const line of lines) {
     if (!line.trim()) continue;
 
     const { x, text: s } = parseLine(line);
     if (!s) continue;
     if (isParenthetical(s)) continue;
+
+    // If current pending char is a prefix of a known multi-word name, and this line
+    // completes it (e.g. currentChar="LADY", s starts with "CAPULET") → merge
+    if (currentChar && charPrefixes[currentChar] && buffer.length === 0) {
+      for (const fullName of charPrefixes[currentChar]) {
+        const suffix = fullName.slice(currentChar.length).trim();
+        const sCleaned = s.replace(/\s*\[.*?\]/g,'').replace(/[&,].*$/,'').trim().toUpperCase();
+        if (sCleaned === suffix || sCleaned.startsWith(suffix)) {
+          currentChar = fullName;
+          // rest of s after the suffix is stage direction noise, skip it
+          break;
+        }
+      }
+      continue; // skip normal processing — we just handled a name continuation
+    }
 
     if (hasTags && x !== null) {
       // Dynamic x-position classification:
@@ -1067,36 +1212,37 @@ function parseScript(raw, knownChars) {
       // We track the minimum x seen for known chars to set the boundary.
 
       if (isKnownChar(s)) {
+        // Exact known character name — always treat as a speaker cue
         flush();
         currentChar = cleanName(s);
         buffer = [];
-        // Record this x as char name position for calibration
-        if (!window._charNameX || x < window._charNameX + 20) {
-          window._charNameX = x;
-          window._stageX = x - 20; // stage dirs are left of char names
-        }
+      } else if (isStageDir(s)) {
+        // Explicit stage direction markers like [, (, *
+        flush();
+        beats.push({char: '—', text: s, isStage: true});
+        currentChar = null;
       } else {
-        // Determine stage dir vs dialogue using x position
-        const stageThreshold = window._charNameX ? window._charNameX - 5 : 140;
-        if (x < stageThreshold && !currentChar) {
-          // Left-margin with no active speaker = stage direction
-          if (s.length > 3) beats.push({char: '—', text: s, isStage: true});
-        } else if (x < stageThreshold && currentChar) {
-          // Left-margin while we have a speaker = likely stage direction interrupting
-          const isMixedProse = /^[A-Z][a-z]/.test(s) &&
-            s.replace(/[^a-z]/g,'').length > s.replace(/[^A-Z]/g,'').length &&
-            s.length > 15;
-          if (isMixedProse) {
-            flush();
-            beats.push({char: '—', text: s, isStage: true});
-            currentChar = null;
-          } else {
-            buffer.push(s);
-          }
+        // Check if line STARTS WITH a known char name (PDF sometimes merges
+        // the speaker cue with a line number or even their first line of dialogue)
+        const split = splitCharLine(s);
+        if (split) {
+          flush();
+          currentChar = split.char;
+          buffer = [];
+          if (split.dialogue) buffer.push(split.dialogue);
+        } else if (looksLikeSpeakerCue(s)) {
+          // Speaker cue check ALWAYS wins — even if we have a currentChar.
+          // This prevents e.g. "SERVANT" mid-scene from being swallowed into
+          // the previous character's dialogue buffer.
+          flush();
+          currentChar = extractSpeakerCueName(s);
+          buffer = [];
         } else if (currentChar) {
+          // We have an active speaker — this line is their dialogue
           buffer.push(s);
         } else {
-          // No current char, not a stage dir — likely scene heading, skip
+          // No active speaker and not a known char — stage direction / heading
+          if (s.length > 3) beats.push({char: '—', text: s, isStage: true});
         }
       }
 
@@ -1106,17 +1252,19 @@ function parseScript(raw, knownChars) {
         flush();
         currentChar = cleanName(s);
         buffer = [];
+      } else if (splitCharLine(s)) {
+        const split = splitCharLine(s);
+        flush();
+        currentChar = split.char;
+        buffer = [];
+        if (split.dialogue) buffer.push(split.dialogue);
+      } else if (looksLikeSpeakerCue(s)) {
+        // Speaker cue always wins — even mid-dialogue
+        flush();
+        currentChar = extractSpeakerCueName(s);
+        buffer = [];
       } else if (currentChar) {
-        const isStageProse = /^[A-Z][a-z]/.test(s) &&
-          s.replace(/[^a-z]/g,'').length > s.replace(/[^A-Z]/g,'').length &&
-          s.length > 15;
-        if (isStageProse) {
-          flush();
-          beats.push({char:'—', text:s, isStage:true});
-          currentChar = null;
-        } else {
-          buffer.push(s);
-        }
+        buffer.push(s);
       } else {
         const isStageProse = /^[A-Z][a-z]/.test(s) &&
           s.replace(/[^a-z]/g,'').length > s.replace(/[^A-Z]/g,'').length &&
@@ -1126,6 +1274,37 @@ function parseScript(raw, knownChars) {
     }
   }
 
+  flush();
+  return beats.filter(b => b.text.trim());
+}
+
+// Parse already-clean "CHARNAME\ndialogue" format produced by runInlineConversion
+function parseCleanScript(raw) {
+  const beats = [];
+  const lines = raw.split('\n');
+  let currentChar = null;
+  let buffer = [];
+
+  function flush() {
+    if (currentChar && buffer.length) {
+      const text = buffer.join(' ').replace(/\s+/g, ' ').trim();
+      if (text) beats.push({ char: currentChar, text, isStage: false });
+    }
+    currentChar = null;
+    buffer = [];
+  }
+
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t) { flush(); continue; }
+    // Character name: all-caps (with spaces, periods, apostrophes), short, alone on line
+    if (/^[A-Z][A-Z\s.']{0,30}$/.test(t) && t.length >= 2) {
+      flush();
+      currentChar = t;
+    } else if (currentChar) {
+      buffer.push(t);
+    }
+  }
   flush();
   return beats.filter(b => b.text.trim());
 }
@@ -1180,11 +1359,20 @@ function importScript() {
   if (!raw) { showToast('Please upload a script or paste text first!'); return; }
   // myChar is optional here — user picks character on the next screen
 
-  // Use manually entered character names if available
+  // If the text has already been through runInlineConversion, it's in clean
+  // NAME\ndiалogue\n format — parse that directly instead of re-running the
+  // complex raw-PDF parser which will mangle it.
+  const isCleanFormat = !raw.includes('[x:') && /^[A-Z][A-Z\s.']+\n/m.test(raw);
+
   const knownChars = detectedCharacterNames && detectedCharacterNames.length
-    ? detectedCharacterNames
-    : null;
-  const scriptBeats = parseScript(raw, knownChars);
+    ? detectedCharacterNames : null;
+
+  let scriptBeats;
+  if (isCleanFormat) {
+    scriptBeats = parseCleanScript(raw);
+  } else {
+    scriptBeats = parseScript(raw, knownChars);
+  }
   if (!scriptBeats.length) { showToast("Couldn't parse script — check format"); return; }
 
   const beatData = collectBeatData();
@@ -1683,33 +1871,60 @@ function launchStudy() {
   updateModeUI();
   renderChat();
   goTo('screen-study');
-  // Always auto-advance — finds first my-line within this beat
-  const s3 = scripts[currentScriptIdx];
-  const chosenBeatIdx = window._currentBeatIdx || 0;
-  const nextBeatStart = (s3.beats && s3.beats[chosenBeatIdx + 1])
-    ? s3.beats[chosenBeatIdx + 1].startIdx
-    : s3.script.length;
-  setTimeout(() => autoAdvanceToMyLineBounded(nextBeatStart), 50);
+  // Always auto-advance to the first my-line — search the whole script
+  setTimeout(() => autoAdvanceToMyLineBounded(scripts[currentScriptIdx].script.length), 50);
 }
 
 function autoAdvanceToMyLineBounded(limit) {
   if (mode !== 'run') return;
   const s = scripts[currentScriptIdx];
+  const ANIMATE_LAST = 4; // only animate the last N other-char lines before my cue
+
+  // Find where my next line is within the limit
+  let myLineIdx = -1;
+  for (let i = cursor; i < Math.min(limit, s.script.length); i++) {
+    const b = s.script[i];
+    if (!b.isStage && b.char === selectedChar) { myLineIdx = i; break; }
+  }
+
+  if (myLineIdx === -1) {
+    // No my-line found within limit — just render where we are
+    renderChat();
+    return;
+  }
+
+  // Find the start of the animated window: up to ANIMATE_LAST spoken lines before my cue
+  let animateFrom = myLineIdx;
+  let spokenCount = 0;
+  for (let i = myLineIdx - 1; i >= cursor; i--) {
+    if (!s.script[i].isStage) {
+      spokenCount++;
+      if (spokenCount <= ANIMATE_LAST) animateFrom = i;
+      else break;
+    }
+  }
+
+  // Jump instantly to animateFrom
+  cursor = animateFrom;
+  hintLevel = 0;
+  lineRevealed = false;
+  renderChat();
+
+  // Now animate from animateFrom up to myLineIdx
   function step() {
     if (cursor >= s.script.length - 1) return;
     const beat = s.script[cursor];
     const isMe = !beat.isStage && beat.char === selectedChar;
-    if (isMe) return; // stop — found my line
-    // Stop if we've reached the limit AND the next position is my line or past limit
-    if (cursor >= limit) return;
-    const delay = beat.isStage ? 300 : 600;
-    setTimeout(() => {
-      cursor++;
-      hintLevel = 0;
-      lineRevealed = false;
-      renderChat();
-      step();
-    }, delay);
+    if (isMe) { renderChat(); return; }
+    if (cursor >= limit) { renderChat(); return; }
+    const delay = beat.isStage ? 0 : 500;
+    if (delay === 0) {
+      cursor++; hintLevel = 0; lineRevealed = false; step();
+    } else {
+      setTimeout(() => {
+        cursor++; hintLevel = 0; lineRevealed = false; renderChat(); step();
+      }, delay);
+    }
   }
   step();
 }
@@ -1719,12 +1934,34 @@ function renderChat() {
   const area = document.getElementById('chatArea');
   area.innerHTML = '';
 
-  // Only render last 10 non-stage beats so chat starts full with no blank space
+  // Dynamically calculate how many messages fit in the chat box.
+  // Measure: each line is roughly lineHeight px tall. Multiline messages are taller.
+  // We walk backwards from cursor counting non-stage beats until we'd overflow.
+  const areaHeight = 320;
+  const lineHeight = 17; // px per line at font-size 13 / line-height 1.3
+  const charWidth = 7.5;  // avg px per char at font-size 13
+  const areaWidth = (area.offsetWidth || 380) - 16; // minus padding
+
   const visibleBeats = [];
   for (let i = 0; i <= cursor; i++) {
     if (!s.script[i].isStage) visibleBeats.push(i);
   }
-  const startFrom = Math.max(0, visibleBeats.length - 10);
+
+  // Walk backwards, accumulating estimated height until we'd exceed areaHeight
+  let usedHeight = 0;
+  let startFrom = visibleBeats.length;
+  for (let vi = visibleBeats.length - 1; vi >= 0; vi--) {
+    const b = s.script[visibleBeats[vi]];
+    const nameLen = (b.char || '').length + 2; // "NAME: "
+    const textLen = (b.text || '').length;
+    const charsPerLine = Math.max(20, Math.floor(areaWidth / charWidth));
+    const totalChars = nameLen + textLen;
+    const lines = Math.ceil(totalChars / charsPerLine);
+    const msgHeight = lines * lineHeight + 2; // +2 for margin
+    if (usedHeight + msgHeight > areaHeight && startFrom < visibleBeats.length) break;
+    usedHeight += msgHeight;
+    startFrom = vi;
+  }
   const renderFrom = visibleBeats.length > 0 ? visibleBeats[startFrom] : 0;
 
   // Track which beat each script index belongs to
@@ -1807,6 +2044,7 @@ function renderChat() {
   updateBeatBanner();
   updateProgress();
   trimChatLines();
+
 }
 
 function updateBeatBanner() {
@@ -1844,10 +2082,18 @@ function updateProgress() {
 
 function showDebugInfo() {
   const s = scripts[currentScriptIdx];
+  // Count lines per character
+  const charCounts = {};
+  s.script.forEach(b => { if (!b.isStage) charCounts[b.char] = (charCounts[b.char]||0)+1; });
+  const topChars = Object.entries(charCounts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([c,n])=>`${c}:${n}`).join(', ');
+  // Find first occurrence of selectedChar
+  const firstMyLine = s.script.findIndex(b => !b.isStage && b.char === selectedChar);
   let lines = [
     `cursor: ${cursor}`,
-    `_currentBeatIdx: ${window._currentBeatIdx}`,
-    `selectedChar: ${selectedChar}`,
+    `selectedChar: "${selectedChar}"`,
+    `first "${selectedChar}" line: idx ${firstMyLine}`,
+    `total lines: ${s.script.length}`,
+    `top chars: ${topChars}`,
     `beats:`
   ];
   if (s.beats) {
@@ -2179,16 +2425,147 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
+// ── INLINE CONVERSION ────────────────────────────────────────────────────────
+function runInlineConversion() {
+  if (!extractedScriptText) { showToast('Upload a PDF first!'); return; }
+
+  const charInput = document.getElementById('manualCharInput').value.trim();
+  if (!charInput) { showToast('Enter character names first!'); return; }
+
+  const charSet = new Set(charInput.split(',').map(c => c.trim().toUpperCase()).filter(Boolean));
+  const lines = extractedScriptText.split('\n');
+  const output = [];
+
+  const isFolgerFormat = lines.some(l => l.includes('FTLN'));
+  const folgerJunkX = new Set([30, 438, 96, 194, 368, 354, 367]);
+
+  // ── Detect x-positions for each zone by finding where known char names appear ──
+  // charNameX = the x of character name cues (most indented of the named chars)
+  let charNameX = null;
+  let dialogX = null;
+
+  // Normalize a line to match against charSet (strip parens, O.S., CONT'D etc)
+  function normalizeCharName(s) {
+    return s.replace(/\s*\(.*?\)/g, '')
+            .replace(/\s+(O\.S\.|V\.O\.|O\.C\.|CONT'D|CONTD)$/gi, '')
+            .replace(/[^A-Z\s.]/gi, '')
+            .replace(/\s+/g, ' ')
+            .toUpperCase().trim();
+  }
+
+  for (const line of lines) {
+    const m = line.match(/^\[x:(\d+)\](.*)/);
+    if (!m) continue;
+    const x = parseInt(m[1]);
+    const norm = normalizeCharName(m[2].trim());
+    if (charSet.has(norm)) {
+      if (charNameX === null || x < charNameX) charNameX = x;
+    }
+  }
+
+  // If we found char name x, dialogue is typically ~70pt to the left of it
+  // Stage directions are further left than that
+  const stageX = charNameX !== null ? charNameX - 100 : null;
+
+  const skipPatterns = isFolgerFormat ? [
+    /^\d+$/, /^ACT\s+[IVX\d]/i, /^Romeo and Juliet/i,
+    /^Enter\s/i, /^Exit\b/i, /^Exeunt/i,
+  ] : [ /^\d+$/, /^(INT\.|EXT\.)/i ];
+
+  let currentChar = null;
+  let dialogBuf = [];
+  let convStarted = !isFolgerFormat;
+
+  function flushDialog() {
+    if (currentChar && dialogBuf.length) {
+      const text = dialogBuf.join(' ')
+        .replace(/\s*\(.*?\)/g, '')
+        .replace(/FTLN\s*\d+/gi, '')
+        .replace(/[\u0000\u200B\uFEFF]/g, ' ')
+        .replace(/\s+/g, ' ').trim();
+      if (text) { output.push(currentChar); output.push(text); output.push(''); }
+    }
+    currentChar = null;
+    dialogBuf = [];
+  }
+
+  for (const line of lines) {
+    const m = line.match(/^\[x:(\d+)\](.*)/);
+    if (!m) continue;
+    const x = parseInt(m[1]);
+    let text = m[2].trim();
+    if (!text) continue;
+
+    if (isFolgerFormat && !convStarted) {
+      if (line.includes('FTLN') || text.includes('FTLN')) convStarted = true;
+      continue;
+    }
+    if (isFolgerFormat && folgerJunkX.has(x)) continue;
+
+    const rawText = text.replace(/[\u0000\u200B\uFEFF]/g, ' ').replace(/\s+/g,' ').trim();
+    if (!convStarted) {
+      if (rawText.toUpperCase().includes('FTLN')) convStarted = true;
+      continue;
+    }
+
+    text = rawText
+      .replace(/\bFTLN\s*\d+\b/gi, '')
+      .replace(/\b\d{1,4}\b/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+    if (!text) continue;
+
+    // Skip junk lines
+    if (skipPatterns.some(p => p.test(text))) continue;
+    if (/^(Enter|Exit|Exeunt|They |Chorus)/i.test(text)) { flushDialog(); continue; }
+    // Skip (MORE) and page numbers
+    if (/^\(MORE\)$/i.test(text.trim())) continue;
+    if (/^\d+\.?$/.test(text.trim())) continue;
+
+    // Check if this line is a character name cue
+    const norm = normalizeCharName(text);
+    const isCharCue = charSet.has(norm) ||
+      // Also match by x-position if we know where char names are indented
+      (charNameX !== null && Math.abs(x - charNameX) <= 10 &&
+       /^[A-Z][A-Z\s.'-]+$/.test(norm) && norm.length >= 2 && norm.length <= 35);
+
+    if (isCharCue) {
+      flushDialog();
+      currentChar = norm;
+    } else if (currentChar) {
+      // If x-position tells us this is a stage direction (too far left), flush
+      if (stageX !== null && x <= stageX && text.length > 15 &&
+          /^[A-Z][a-z]/.test(text)) {
+        flushDialog();
+      } else if (!isFolgerFormat) {
+        // Non-Folger: use mixed-case detection for stage directions
+        const isStageProse = /^[A-Z][a-z]/.test(text) &&
+          text.replace(/[^a-z]/g,'').length > text.replace(/[^A-Z]/g,'').length &&
+          text.length > 15 &&
+          (stageX === null || x <= stageX + 20);
+        if (isStageProse) { flushDialog(); }
+        else { dialogBuf.push(text); }
+      } else {
+        if (charNameX && x < charNameX - 5) { flushDialog(); }
+        else { dialogBuf.push(text); }
+      }
+    }
+  }
+  flushDialog();
+
+  extractedScriptText = output.join('\n');
+  pasteMode = false;
+  document.getElementById('convertPreviewSection').style.display = 'block';
+  document.getElementById('convertedScriptPreview').value = extractedScriptText;
+  const charLines = output.filter(l => charSet.has(l.trim()));
+  document.getElementById('convertedStats').textContent =
+    charLines.length + ' spoken lines — review above then click Save & Open';
+  showToast('Converted! Review then click Save & Open');
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadFromStorage();
-</script>
 
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-if (typeof pdfjsLib !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
+// PDF.js loaded externally via script tag below
 
 let extractedScriptText = '';
 let detectedCharacterNames = [];
@@ -2223,6 +2600,8 @@ async function extractPDF(file) {
     setUploadProgress(false);
     return;
   }
+  // Run PDF.js in main thread (works in all environments without a separate worker file)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   const arrayBuffer = await file.arrayBuffer();
   setUploadProgressBar(10, 'Loading PDF...');
@@ -2239,26 +2618,63 @@ async function extractPDF(file) {
     const pageWidth = viewport.width;
 
     // Group items by Y position (within 3pt tolerance = same line)
+    // Include page number in key so lines from different pages don't merge
     const lineMap = {};
+    const seenItems = new Set(); // deduplicate exact same text at same position
     for (const item of pageContent.items) {
       const y = Math.round(item.transform[5] / 3) * 3;
-      const x = item.transform[4];
-      if (!lineMap[y]) lineMap[y] = {items: [], minX: x};
-      lineMap[y].items.push(item.str);
-      if (x < lineMap[y].minX) lineMap[y].minX = x;
+      const x = Math.round(item.transform[4]);
+      // Use page-scoped key so same Y on different pages don't collide
+      const lineKey = `${i}:${y}`;
+      // Deduplicate: skip if we've already seen this exact text at this position
+      const dedupKey = `${lineKey}|${x}|${item.str}`;
+      if (seenItems.has(dedupKey)) continue;
+      seenItems.add(dedupKey);
+      if (!lineMap[lineKey]) lineMap[lineKey] = {items: [], minX: x, sortY: y};
+      // Skip pure numbers at far-right x (inline scene line numbers like 120, 125)
+      const isInlineNum = /^\s*\d+\s*$/.test(item.str) && x > 350;
+      if (!isInlineNum) lineMap[lineKey].items.push({str: item.str, x});
+      if (x < lineMap[lineKey].minX) lineMap[lineKey].minX = x;
     }
 
-    const sortedYs = Object.keys(lineMap).map(Number).sort((a,b) => b - a);
+    const sortedYs = Object.keys(lineMap).sort((a,b) => lineMap[b].sortY - lineMap[a].sortY);
     for (const y of sortedYs) {
       const lineData = lineMap[y];
-      const lineText = lineData.items.join(' ').trim();
+      if (!lineData.items.length) continue;
+
+      // Detect annotation column by finding a large x-gap between items on the same line.
+      // In a two-column layout (dialogue + gloss), there's a significant horizontal gap.
+      // We find the biggest gap and split there if it's wide enough to be a column boundary.
+      let useItems = lineData.items;
+      if (lineData.items.length >= 2) {
+        const sorted = [...lineData.items].sort((a, b) => a.x - b.x);
+        let maxGap = 0, splitIdx = 0;
+        for (let gi = 1; gi < sorted.length; gi++) {
+          const gap = sorted[gi].x - sorted[gi-1].x;
+          if (gap > maxGap) { maxGap = gap; splitIdx = gi; }
+        }
+        // Only split if the gap is substantial (>80pt) AND there's content on both sides
+        // AND the left side has meaningful text (not just a line number)
+        if (maxGap > 80 && splitIdx > 0 && splitIdx < sorted.length) {
+          const leftPart = sorted.slice(0, splitIdx);
+          const leftText = leftPart.map(it => it.str).join(' ').trim();
+          // Only drop right column if left side has real content (not just digits)
+          if (leftText && !/^[\d\s.]+$/.test(leftText)) {
+            useItems = leftPart;
+          }
+        }
+      }
+
+      const lineText = useItems.map(it => it.str).join(' ').trim();
       if (!lineText) continue;
 
-      // Encode x position as a tag at the start of the line
-      // Parser will read this to determine line type
       const xPos = Math.round(lineData.minX);
-      // Strip null bytes and zero-width characters that some PDFs embed
-      const cleanedText = lineText.replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '');
+      const cleanedText = lineText
+        .replace(/[\u0000\u200B\u200C\u200D\uFEFF]/g, '')
+        .replace(/\s\d{1,4}\s/g, ' ')
+        .replace(/^\d{1,4}\s/, '')
+        .replace(/\s\d{1,4}$/, '')
+        .trim();
       if (cleanedText) fullText += `[x:${xPos}]${cleanedText}\n`;
     }
     fullText += '\n';
@@ -2294,10 +2710,237 @@ function onExtractionDone(filename, text) {
     document.getElementById('importStatusBar').textContent = 'Script loaded — character names preserved. Click OK to save.';
     showToast('✅ Script loaded!');
   } else {
-    document.getElementById('importStatusBar').textContent = 'Script loaded — type the character names below';
-    document.getElementById('manualCharInput').focus();
-    showToast('✅ Script loaded! Now type the character names.');
+    // Auto-detect names and pre-fill the input immediately
+    const autoDetected = autoDetectCharNames(text);
+    if (autoDetected.length) {
+      const nameStr = autoDetected.join(', ');
+      document.getElementById('manualCharInput').value = nameStr;
+      buildCharChipsFromInput(nameStr);
+      document.getElementById('importStatusBar').textContent = `Found ${autoDetected.length} characters — click yours, then Save & Open`;
+      showToast(`✅ Found ${autoDetected.length} characters automatically!`);
+    } else {
+      document.getElementById('importStatusBar').textContent = 'Script loaded — type the character names below';
+      document.getElementById('manualCharInput').focus();
+      showToast('✅ Script loaded! Now type the character names.');
+    }
   }
+
+  // Show suggestions for any names not already in the list
+  autoSuggestCharNames(text);
+
+  // Auto-run the conversion so the preview is immediately visible
+  setTimeout(() => {
+    const charInput = document.getElementById('manualCharInput').value.trim();
+    if (charInput) runInlineConversion();
+  }, 200);
+}
+
+// Shared set of words/phrases that are never character names
+const CHAR_NAME_SKIP = new Set([
+  // Script structure
+  'ACT','SCENE','PROLOGUE','EPILOGUE','CHORUS','END','MORE','CONTINUED',
+  'CONTD','CONT','CONTED','INTERCUT','TITLE','SUBTITLE','SUPER',
+  'CUT','FADE','DISSOLVE','FLASHBACK','SMASH','BACK','FORWARD',
+  // Entrances / exits
+  'ENTER','ENTERS','EXIT','EXITS','EXEUNT',
+  // Time / continuity
+  'DAY','NIGHT','MORNING','EVENING','AFTERNOON','LATER','CONTINUOUS',
+  'MOMENTS','SIMULTANEOUSLY','MEANWHILE',
+  // Common non-name ALL-CAPS words
+  'THE','AND','BUT','FOR','NOT','WITH','FROM','INTO','OVER','UNDER',
+  'THAT','THIS','THEN','WHEN','WHAT','WHERE','WHICH','THEIR','THERE',
+  'EVERYONE','EVERYONE PRESENT','ALL','TOGETHER','VOICE','OFFSCREEN',
+  'PAGE','NOTE','NOTES','PART','BOOK','CHAPTER','SECTION',
+  // Screenplay header words
+  'INT','EXT','EST','POV','INSERT','CLOSE','WIDE','ANGLE','SHOT',
+  // Settings / locations (common ones)
+  'MOUNTAINS','FOREST','STREET','OFFICE','ROOM','HOUSE','SCHOOL',
+  'CHURCH','HOSPITAL','KITCHEN','BEDROOM','HALLWAY','LOBBY','PARKING',
+  'PARK','CLUB','CAFE','BAR','RESTAURANT','AIRPORT','STATION',
+  // Academic
+  'FTLN','APPENDIX','INDEX','CONTENTS','WILLIAM','SHAKESPEARE','CAST','CHARACTERS',
+  'SETTING','PLACE','TIME',
+]);
+
+// Check if a candidate name should be skipped
+function isSkippedName(name) {
+  const upper = name.toUpperCase().trim();
+  if (CHAR_NAME_SKIP.has(upper)) return true;
+  // Skip if ALL words in the name are skip words
+  const words = upper.split(/\s+/);
+  if (words.every(w => CHAR_NAME_SKIP.has(w))) return true;
+  // Skip if it looks like a scene heading: contains INT or EXT
+  if (/\b(INT|EXT|EST)\b/.test(upper)) return true;
+  // Skip CONT'D / CONTD as standalone or suffix
+  if (/CONT['.]?D/.test(upper)) return true;
+  return false;
+}
+
+// Returns a clean list of detected character names (high confidence only)
+function autoDetectCharNames(text) {
+  const SKIP = CHAR_NAME_SKIP;
+
+  const lines = text.split('\n');
+  const counts = {};
+  const followedByDialogue = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const m = raw.match(/^\[x:\d+\](.*)/);
+    const s = (m ? m[1] : raw).trim();
+    if (!s || s.length < 2 || s.length > 35) continue;
+
+    // Strip trailing line numbers and brackets
+    const stripped = s.replace(/\s*\[.*?\]/g, '').replace(/[\d.\s]+$/, '').trim();
+    if (!stripped || stripped.length < 2) continue;
+
+    // Must be mostly uppercase (allow periods for MR. MRS. DR. etc)
+    const letters = stripped.replace(/[^a-zA-Z]/g, '');
+    if (!letters || letters.length < 2) continue;
+    const upper = letters.replace(/[a-z]/g, '');
+    if (upper.length / letters.length < 0.85) continue;
+    // Allow periods but not other sentence punctuation
+    if (/[!?,;]/.test(stripped)) continue;
+
+    // Normalize: strip periods, O.S., V.O., CONT'D suffixes
+    const key = stripped
+      .replace(/\s*(CONT'D|CONTD|CONT\.?D\.?)\s*$/gi, '')
+      .replace(/\s+(O\.S\.|V\.O\.|O\.C\.)$/gi, '')
+      .replace(/[^A-Z\s]/gi, '')
+      .replace(/\s+/g, ' ')
+      .toUpperCase().trim();
+    if (!key || SKIP.has(key)) continue;
+    // Skip if the name itself ends with or IS a skip word
+    if (key.split(' ').some(w => SKIP.has(w) && w.length > 3)) continue;
+    if (key.split(' ').length > 4) continue;
+
+    // Check if followed by longer line (dialogue) = strong signal
+    const next = lines[i + 1] ? lines[i + 1].replace(/^\[x:\d+\]/, '').trim() : '';
+    const hasDialogue = next.length > stripped.length && next.length > 8 &&
+                        !/^[A-Z\s]{2,}$/.test(next); // next line isn't also a name
+
+    counts[key] = (counts[key] || 0) + 1;
+    if (hasDialogue) followedByDialogue[key] = (followedByDialogue[key] || 0) + 1;
+  }
+
+  // High confidence: appeared multiple times AND followed by dialogue
+  return Object.entries(counts)
+    .filter(([k]) => (followedByDialogue[k] || 0) >= 2 && !isSkippedName(k))
+    .sort((a, b) => b[1] - a[1])
+    .map(([k]) => k)
+    .slice(0, 40);
+}
+
+function autoSuggestCharNames(text) {
+  const SKIP = CHAR_NAME_SKIP;
+
+  const lines = text.split('\n');
+  const counts = {};
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const m = raw.match(/^\[x:\d+\](.*)/);
+    const s = (m ? m[1] : raw).trim();
+    if (!s || s.length < 2) continue;
+
+    // Strip bracketed stage notes and trailing line numbers
+    const stripped = s.replace(/\s*\[.*?\]/g, '').replace(/[\d.\s]+$/, '').trim();
+    if (!stripped || stripped.length < 2) continue;
+
+    // Must be mostly uppercase letters
+    const letters = stripped.replace(/[^a-zA-Z]/g, '');
+    if (!letters || letters.length < 2) continue;
+    const upper = letters.replace(/[a-z]/g, '');
+    if (upper.length / letters.length < 0.85) continue;
+
+    // No sentence punctuation mid-string
+    if (/[.!?,;]/.test(stripped.slice(0, -1))) continue;
+
+    const key = stripped
+      .replace(/\s*(CONT'D|CONTD|CONT\.?D\.?)\s*$/gi, '')
+      .replace(/\s+(O\.S\.|V\.O\.|O\.C\.)$/gi, '')
+      .toUpperCase().replace(/[^A-Z\s]/g, '').trim();
+    if (!key) continue;
+
+    // If line contains multiple words that are each valid names, score them individually.
+    // e.g. "BENVOLIO MERCUTIO" → score BENVOLIO and MERCUTIO separately, not together.
+    const words = key.split(/\s+/).filter(w => w.length >= 2);
+    const isMultiName = words.length >= 2 && words.every(w => w.length >= 3 && !SKIP.has(w));
+
+    const candidates_here = isMultiName ? words : [key];
+
+    for (const candidate of candidates_here) {
+      if (isSkippedName(candidate)) continue;
+      // Single word max 20 chars, or two-word name max 30 chars
+      if (candidate.length > 30) continue;
+
+      // Bonus: followed by a longer line = likely speaker cue (only applies to single-name lines)
+      const next = lines[i + 1] ? lines[i + 1].trim() : '';
+      const followedByText = !isMultiName && next.length > stripped.length && next.length > 8;
+      counts[candidate] = (counts[candidate] || 0) + (followedByText ? 3 : 1);
+    }
+  }
+
+  // Top candidates with score >= 3 (appeared as speaker cue at least once)
+  const candidates = Object.entries(counts)
+    .filter(([, v]) => v >= 3)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k]) => k)
+    .slice(0, 40);
+
+  if (!candidates.length) return;
+
+  // Show suggestion area
+  let suggestEl = document.getElementById('charSuggestions');
+  if (!suggestEl) {
+    suggestEl = document.createElement('div');
+    suggestEl.id = 'charSuggestions';
+    suggestEl.style.cssText = 'margin-top:6px;';
+    const manualInput = document.getElementById('manualCharInput');
+    manualInput.parentNode.insertBefore(suggestEl, manualInput.nextSibling);
+  }
+
+  suggestEl.innerHTML = '<div style="font-size:11px;color:#555;font-family:Tahoma,sans-serif;margin-bottom:4px;">💡 Detected — tap to add:</div><div id="suggestChips" style="display:flex;flex-wrap:wrap;gap:3px;"></div>';
+
+  const chipsContainer = document.getElementById('suggestChips');
+
+  function refreshSuggestions() {
+    const currentNames = new Set(
+      document.getElementById('manualCharInput').value
+        .split(',').map(n => n.trim().toUpperCase()).filter(Boolean)
+    );
+    chipsContainer.innerHTML = '';
+    let anyLeft = false;
+    candidates.forEach(name => {
+      if (currentNames.has(name)) return; // already added
+      anyLeft = true;
+      const chip = document.createElement('div');
+      chip.style.cssText = 'background:#f0f8e8;border:1px solid #88aa44;padding:3px 9px;font-size:11px;font-family:Tahoma,sans-serif;cursor:pointer;color:#334400;border-radius:2px;';
+      chip.textContent = '+ ' + name;
+      chip.onclick = () => {
+        const inp = document.getElementById('manualCharInput');
+        const current = inp.value.trim();
+        inp.value = current ? current + ', ' + name : name;
+        buildCharChipsFromInput(inp.value);
+        refreshSuggestions();
+      };
+      chipsContainer.appendChild(chip);
+    });
+    if (!anyLeft) suggestEl.style.display = 'none';
+  }
+
+  refreshSuggestions();
+
+  // Also refresh when user manually edits the input
+  document.getElementById('manualCharInput').addEventListener('input', () => {
+    refreshSuggestions();
+    // Re-run conversion with updated char list after a short delay
+    clearTimeout(window._reConvertTimer);
+    window._reConvertTimer = setTimeout(() => {
+      const charInput = document.getElementById('manualCharInput').value.trim();
+      if (charInput && extractedScriptText) runInlineConversion();
+    }, 600);
+  });
 }
 
 // Build clickable chips as the user types names
@@ -2345,14 +2988,7 @@ function detectCharacters(text) {
   const candidateCounts = {};
   const dialogueCounts  = {};
 
-  const SKIP = new Set([
-    'INT','EXT','FADE','CUT','DISSOLVE','SMASH','TITLE','THE END',
-    'CONTINUED','MORE','OVER','SCENE','ACT ONE','ACT TWO','ACT THREE',
-    'ACT I','ACT II','ACT III','COLD OPEN','END OF ACT','TAG','TEASER',
-    'EPILOGUE','PROLOGUE','FLASHBACK','END FLASHBACK','INTERCUT','MONTAGE',
-    'SUPER','VO','OS','OC','INSERT','END INSERT','BLACK','SILENCE',
-    'LATER','CONTINUOUS','SAME TIME','MOMENTS LATER',
-  ]);
+  const SKIP = CHAR_NAME_SKIP;
 
   for (let i = 0; i < lines.length; i++) {
     const raw  = lines[i];
@@ -2446,6 +3082,13 @@ function togglePasteFallback() {
 
 // importScript reads extractedScriptText directly — no override needed
 
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// If CDN worker fails to load, fall back to fake worker silently
+if (typeof pdfjsLib !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 </script>
 </body>
 </html>
